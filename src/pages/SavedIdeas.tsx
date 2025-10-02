@@ -48,7 +48,7 @@ const SavedIdeas = () => {
             </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Your personal collection of romantic date ideas
+            A collection of your favorite date ideas
           </p>
         </div>
 
