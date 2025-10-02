@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt, Trash2, Star as StarIcon, Star } from "lucide-react";
+import { Heart, MapPin, Clock, DollarSign, Calendar, Copy, Shirt, Trash2, Star as StarIcon, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
 import GoogleMap from "./GoogleMap";
@@ -262,8 +262,8 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
           Schedule
         </Button>
         <Button onClick={handleShare} variant="accent" className="flex-1">
-          <Share2 className="mr-2" />
-          Share
+          <Copy className="mr-2" />
+          Copy
         </Button>
         {showReview && (
           <Button onClick={() => setReviewModalOpen(true)} variant="outline" className="flex-1">
