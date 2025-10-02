@@ -137,73 +137,48 @@ const Index = () => {
       console.log(`Found ${allPlaces.length} total venues`);
 
       const ideas: DateIdea[] = [];
-      const ideasToGenerate = Math.min(4, Math.floor(allPlaces.length / 3));
+      const ideasToGenerate = Math.min(4, Math.floor(allPlaces.length / 2));
 
-      // Separate venues by type for better variety
-      const restaurants = allPlaces.filter(p => p.types?.includes('restaurant'));
-      const cafes = allPlaces.filter(p => p.types?.includes('cafe'));
-      const bars = allPlaces.filter(p => p.types?.includes('bar') && !p.types?.includes('movie_theater'));
-      const activities = allPlaces.filter(p => 
-        p.types?.includes('museum') || 
-        p.types?.includes('park') || 
-        p.types?.includes('art_gallery') ||
-        p.types?.includes('movie_theater')
-      );
-
-      console.log(`Venue breakdown: ${restaurants.length} restaurants, ${cafes.length} cafes, ${bars.length} bars, ${activities.length} activities`);
+      console.log(`Generating ${ideasToGenerate} date ideas from ${allPlaces.length} venues`);
 
       // Generate varied date ideas with AI-powered titles and descriptions
       const ideaPromises = [];
       
       for (let i = 0; i < ideasToGenerate; i++) {
-        // Create varied combinations - mix different venue types
-        let venuesForIdea: any[] = [];
+        // Ensure we have enough venues left
+        if (allPlaces.length < (i * 2) + 2) break;
         
-        // Strategy: Pick from different categories to ensure variety
-        const availableRestaurants = restaurants.filter(r => !venuesForIdea.find(v => v.id === r.id));
-        const availableBars = bars.filter(b => !venuesForIdea.find(v => v.id === b.id));
-        const availableActivities = activities.filter(a => !venuesForIdea.find(v => v.id === a.id));
-        const availableCafes = cafes.filter(c => !venuesForIdea.find(v => v.id === c.id));
+        // Pick 2-3 venues, spacing them out for variety
+        const venuesForIdea: any[] = [];
+        const startIdx = i * 2;
         
-        // Pick 2-3 venues from different types
-        if (availableRestaurants.length > i) {
-          venuesForIdea.push(availableRestaurants[i]);
+        // Pick venues with spacing
+        if (allPlaces[startIdx]) venuesForIdea.push(allPlaces[startIdx]);
+        if (allPlaces[startIdx + 1]) venuesForIdea.push(allPlaces[startIdx + 1]);
+        
+        // Add a third if we have extras
+        const extraIdx = allPlaces.length - 1 - i;
+        if (extraIdx > startIdx + 1 && allPlaces[extraIdx]) {
+          venuesForIdea.push(allPlaces[extraIdx]);
         }
         
-        if (availableActivities.length > i) {
-          venuesForIdea.push(availableActivities[i]);
-        } else if (availableBars.length > i) {
-          venuesForIdea.push(availableBars[i]);
-        } else if (availableCafes.length > i) {
-          venuesForIdea.push(availableCafes[i]);
-        }
+        const validVenues = venuesForIdea.filter(v => v.location);
         
-        // Add a third if available
-        if (venuesForIdea.length === 2) {
-          if (availableBars.length > i && !venuesForIdea.find(v => v.types?.includes('bar'))) {
-            venuesForIdea.push(availableBars[i]);
-          } else if (availableCafes.length > i && !venuesForIdea.find(v => v.types?.includes('cafe'))) {
-            venuesForIdea.push(availableCafes[i]);
-          }
-        }
-        
-        venuesForIdea = venuesForIdea.filter(v => v.location);
-        
-        if (venuesForIdea.length >= 2) {
+        if (validVenues.length >= 2) {
           ideaPromises.push(
             supabase.functions.invoke('generate-date-content', {
-              body: { venues: venuesForIdea }
+              body: { venues: validVenues }
             }).then(({ data: contentData, error: contentError }) => {
               if (contentError) {
                 console.error('Error generating content:', contentError);
                 return null;
               }
 
-              const venueLinks = venuesForIdea
+              const venueLinks = validVenues
                 .filter(v => v.details?.website)
                 .map(v => ({ name: v.name, url: v.details.website, type: 'website' }));
 
-              const mapLocations = venuesForIdea
+              const mapLocations = validVenues
                 .filter(v => v.location)
                 .map(v => ({
                   name: v.name,
@@ -213,14 +188,14 @@ const Index = () => {
 
               return {
                 id: `idea-${i}`,
-                title: contentData?.title || `${venuesForIdea[0].name} & More`,
-                description: contentData?.description || `Visit ${venuesForIdea.map(v => v.name).join(', ')}`,
+                title: contentData?.title || `${validVenues[0].name} & More`,
+                description: contentData?.description || `Visit ${validVenues.map(v => v.name).join(', ')}`,
                 budget: preferences.budget === 0 ? "Free" : `$${preferences.budget}`,
                 duration: preferences.duration,
                 dressCode: preferences.dressCode,
                 location: preferences.location,
-                activities: venuesForIdea.map(v => `${v.name} - ${v.address}`),
-                foodSpots: venuesForIdea
+                activities: validVenues.map(v => `${v.name} - ${v.address}`),
+                foodSpots: validVenues
                   .filter(v => v.types?.includes('restaurant') || v.types?.includes('cafe') || v.types?.includes('bar'))
                   .map(v => v.name),
                 venueLinks,
