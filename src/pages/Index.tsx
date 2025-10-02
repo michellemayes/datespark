@@ -91,13 +91,32 @@ const Index = () => {
 
       const searchResults = await Promise.all(searchPromises);
       
-      // Combine all results and shuffle for variety
+      // Combine all results
       let allPlaces: any[] = [];
       searchResults.forEach(result => {
         if (result.data?.places) {
           allPlaces = [...allPlaces, ...result.data.places];
         }
       });
+
+      console.log(`Found ${allPlaces.length} total venues before AI filtering`);
+
+      // Use AI to filter venues based on preferences
+      const { data: filterData, error: filterError } = await supabase.functions.invoke('filter-venues', {
+        body: { 
+          venues: allPlaces.map(p => ({ name: p.name, types: p.types })),
+          preferences: {
+            duration: preferences.duration,
+            budget: preferences.budget,
+            dressCode: preferences.dressCode
+          }
+        }
+      });
+
+      if (!filterError && filterData?.indices) {
+        allPlaces = filterData.indices.map((i: number) => allPlaces[i]);
+        console.log(`AI filtered to ${allPlaces.length} appropriate venues`);
+      }
 
       // Filter out movie theaters if we have enough other venues
       const movieTheaters = allPlaces.filter(p => p.types?.includes('movie_theater'));

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, DollarSign, Calendar, Share2 } from "lucide-react";
+import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
 import GoogleMap from "./GoogleMap";
@@ -86,13 +86,14 @@ export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProp
         </div>
         <div className="flex items-center gap-2 text-sm">
           <Clock className="w-4 h-4 text-accent" />
-          <span className="font-medium">{idea.duration}</span>
+          <span className="font-medium capitalize">{idea.duration}</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <MapPin className="w-4 h-4 text-primary" />
           <span className="font-medium capitalize">{idea.location}</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
+          <Shirt className="w-4 h-4 text-secondary" />
           <span className="font-medium capitalize">{idea.dressCode}</span>
         </div>
       </div>
