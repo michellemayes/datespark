@@ -99,13 +99,45 @@ const Index = () => {
         }
       });
 
-      // Shuffle to randomize
-      allPlaces = allPlaces.sort(() => Math.random() - 0.5);
+      // Filter out movie theaters if we have enough other venues
+      const movieTheaters = allPlaces.filter(p => p.types?.includes('movie_theater'));
+      const otherVenues = allPlaces.filter(p => !p.types?.includes('movie_theater'));
+      
+      // Only include 1 movie theater max if we have at least 10 other venues
+      if (otherVenues.length >= 10 && movieTheaters.length > 0) {
+        allPlaces = [...otherVenues, movieTheaters[Math.floor(Math.random() * movieTheaters.length)]];
+      } else if (otherVenues.length >= 10) {
+        allPlaces = otherVenues;
+      }
+
+      // Better shuffle algorithm - multiple passes
+      for (let i = 0; i < 3; i++) {
+        allPlaces = allPlaces.sort(() => Math.random() - 0.5);
+      }
       
       console.log(`Found ${allPlaces.length} total venues`);
 
       const ideas: DateIdea[] = [];
       const ideasToGenerate = Math.min(4, Math.floor(allPlaces.length / 2));
+
+      // Helper to generate creative date titles
+      const generateDateTitle = (venues: any[]) => {
+        const types = venues.flatMap(v => v.types || []);
+        const titleOptions = [
+          { condition: types.includes('museum') && types.includes('cafe'), title: "Cultural Connection" },
+          { condition: types.includes('art_gallery') && types.includes('bar'), title: "Artistic Adventure" },
+          { condition: types.includes('park') && types.includes('restaurant'), title: "Green & Gastronomy" },
+          { condition: types.includes('bar') && types.includes('restaurant'), title: "Night on the Town" },
+          { condition: types.some(t => t.includes('cafe')), title: "Cozy Corner Crawl" },
+          { condition: types.includes('museum'), title: "Museum & More" },
+          { condition: types.includes('park'), title: "Urban Explorer" },
+          { condition: types.includes('art_gallery'), title: "Gallery Hopping" },
+          { condition: types.includes('bar') && !types.includes('movie_theater'), title: "Bar Hopping Adventure" },
+        ];
+        
+        const match = titleOptions.find(opt => opt.condition);
+        return match ? match.title : "Evening Experience";
+      };
 
       // Generate varied date ideas
       for (let i = 0; i < ideasToGenerate && allPlaces.length >= 2; i++) {
@@ -127,7 +159,7 @@ const Index = () => {
 
           ideas.push({
             id: `idea-${i}`,
-            title: `${venuesForIdea[0].name} & More`,
+            title: generateDateTitle(venuesForIdea),
             description: venuesForIdea[2] 
               ? `Start at ${venuesForIdea[0].name}, then ${venuesForIdea[1].name}, and finish at ${venuesForIdea[2].name}`
               : `Begin your evening at ${venuesForIdea[0].name} followed by ${venuesForIdea[1].name}`,
