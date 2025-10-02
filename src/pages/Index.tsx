@@ -50,53 +50,129 @@ const Index = () => {
     });
   };
 
-  const generateDateIdeas = () => {
+  const generateDateIdeas = async () => {
     setIsGenerating(true);
-    // Simulating idea generation - this will be replaced with real logic
-    setTimeout(() => {
-      const mockIdeas: DateIdea[] = [
-        {
+    
+    try {
+      // First, geocode the user's location
+      let coordinates = "37.7749,-122.4194"; // Default to SF
+      
+      if (preferences.userLocation) {
+        const { data: geocodeData, error: geocodeError } = await supabase.functions.invoke('geocode-location', {
+          body: { address: preferences.userLocation }
+        });
+        
+        if (geocodeError) {
+          console.error('Geocoding error:', geocodeError);
+          toast({
+            variant: "destructive",
+            title: "Location error",
+            description: "Could not find your location. Using default area.",
+          });
+        } else {
+          coordinates = `${geocodeData.lat},${geocodeData.lng}`;
+        }
+      }
+
+      // Search for restaurants using Google Places
+      const radiusMeters = preferences.radiusMiles * 1609.34; // Convert miles to meters
+      const { data: placesData, error: placesError } = await supabase.functions.invoke('search-places', {
+        body: {
+          location: coordinates,
+          radius: radiusMeters,
+          type: 'restaurant',
+          budget: preferences.budget
+        }
+      });
+
+      if (placesError) {
+        console.error('Places search error:', placesError);
+        throw placesError;
+      }
+
+      // Generate date ideas using real venue data
+      const places = placesData?.places || [];
+      const ideas: DateIdea[] = [];
+
+      if (places.length >= 2) {
+        // Create a romantic dinner date
+        ideas.push({
           id: "1",
-          title: "Sunset Rooftop Dinner & Jazz",
-          description: "A romantic evening combining great food, live music, and stunning views",
+          title: `Romantic Dinner at ${places[0].name}`,
+          description: `Enjoy a memorable evening with dinner at ${places[0].name}, rated ${places[0].rating || 'highly'} by diners`,
           budget: preferences.budget === 0 ? "Free" : `$${preferences.budget}`,
           duration: preferences.duration,
           dressCode: preferences.dressCode,
           location: preferences.location,
           activities: [
-            "Arrive at 6:30 PM for sunset views",
-            "Enjoy live jazz music from 7-9 PM",
-            "Three-course dinner with wine pairing",
-            "Evening stroll through nearby park",
+            `Arrive at ${places[0].name}`,
+            `Address: ${places[0].address}`,
+            `Rating: ${places[0].rating ? `${places[0].rating} ⭐` : 'Popular local spot'}`,
+            preferences.location === "mixed" ? "Take an evening walk nearby after dinner" : "Enjoy the ambiance",
           ],
           foodSpots: [
-            "The Rooftop - Modern American cuisine",
-            "Jazz Lounge & Bar - Craft cocktails",
-          ],
-        },
-        {
+            `${places[0].name} - ${places[0].address}`,
+            places[1] ? `Alternative: ${places[1].name} - ${places[1].address}` : undefined,
+          ].filter(Boolean) as string[],
+        });
+      }
+
+      if (places.length >= 3) {
+        // Create a progressive dinner date
+        ideas.push({
           id: "2",
-          title: "Art Gallery & Coffee Adventure",
-          description: "Explore local art followed by discovering hidden coffee gems",
-          budget: preferences.budget === 0 ? "Free" : `$${Math.floor(preferences.budget * 0.6)}`,
+          title: "Progressive Dining Experience",
+          description: "Explore multiple venues in one evening - appetizers at one spot, dinner at another",
+          budget: preferences.budget === 0 ? "Free" : `$${Math.floor(preferences.budget * 1.2)}`,
           duration: preferences.duration,
           dressCode: preferences.dressCode,
-          location: "indoor",
+          location: "mixed",
           activities: [
-            "Visit contemporary art gallery (free admission)",
-            "Discuss favorite pieces over coffee",
-            "Browse artisan bookstore",
-            "Try a new coffee brewing method together",
+            `Start with drinks at ${places[1].name}`,
+            `Main course at ${places[0].name}`,
+            places[2] ? `Dessert at ${places[2].name}` : "Find a dessert spot along the way",
+            "Create a mini food tour experience together",
           ],
-          foodSpots: [
-            "Artisan Coffee Co. - Specialty brews",
-            "Gallery Café - Light bites and desserts",
+          foodSpots: places.slice(0, 3).map(p => `${p.name} - ${p.address}`),
+        });
+      }
+
+      // Add a backup idea if we don't have enough places
+      if (ideas.length === 0) {
+        ideas.push({
+          id: "fallback",
+          title: "Cozy Evening Adventure",
+          description: "A flexible date night plan that works anywhere",
+          budget: preferences.budget === 0 ? "Free" : `$${preferences.budget}`,
+          duration: preferences.duration,
+          dressCode: preferences.dressCode,
+          location: preferences.location,
+          activities: [
+            "Find a highly-rated restaurant in your area",
+            "Take a scenic walk before or after dinner",
+            "Discover a new neighborhood together",
+            "End with coffee or dessert at a local café",
           ],
-        },
-      ];
-      setGeneratedIdeas(mockIdeas);
+          foodSpots: ["Ask locals for recommendations", "Use Google Maps to find nearby spots"],
+        });
+      }
+
+      setGeneratedIdeas(ideas);
+      
+      toast({
+        title: "Date ideas generated!",
+        description: `Found ${ideas.length} personalized date idea${ideas.length > 1 ? 's' : ''} for you`,
+      });
+    } catch (error) {
+      console.error('Error generating date ideas:', error);
+      toast({
+        variant: "destructive",
+        title: "Error generating ideas",
+        description: "Please try again or adjust your preferences",
+      });
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
   const handleSaveIdea = async (idea: DateIdea) => {
