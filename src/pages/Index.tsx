@@ -96,6 +96,14 @@ const Index = () => {
 
       if (places.length >= 2) {
         // Create a romantic dinner date
+        const venue1Links = [];
+        if (places[0].details?.website) {
+          venue1Links.push({ name: places[0].name, url: places[0].details.website, type: 'website' });
+        }
+        if (places[1]?.details?.website) {
+          venue1Links.push({ name: places[1].name, url: places[1].details.website, type: 'website' });
+        }
+
         ideas.push({
           id: "1",
           title: `Romantic Dinner at ${places[0].name}`,
@@ -114,11 +122,16 @@ const Index = () => {
             `${places[0].name} - ${places[0].address}`,
             places[1] ? `Alternative: ${places[1].name} - ${places[1].address}` : undefined,
           ].filter(Boolean) as string[],
+          venueLinks: venue1Links,
         });
       }
 
       if (places.length >= 3) {
         // Create a progressive dinner date
+        const venue2Links = places.slice(0, 3)
+          .filter(p => p.details?.website)
+          .map(p => ({ name: p.name, url: p.details.website, type: 'website' }));
+
         ideas.push({
           id: "2",
           title: "Progressive Dining Experience",
@@ -134,6 +147,7 @@ const Index = () => {
             "Create a mini food tour experience together",
           ],
           foodSpots: places.slice(0, 3).map(p => `${p.name} - ${p.address}`),
+          venueLinks: venue2Links,
         });
       }
 

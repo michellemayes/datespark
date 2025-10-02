@@ -15,6 +15,7 @@ export interface DateIdea {
   location: string;
   activities: string[];
   foodSpots?: string[];
+  venueLinks?: Array<{ name: string; url: string; type?: string }>;
 }
 
 interface DateIdeaCardProps {
@@ -111,6 +112,26 @@ export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProp
               <li key={index}>{spot}</li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {idea.venueLinks && idea.venueLinks.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="font-semibold text-sm">Venue Links:</h4>
+          <div className="flex flex-wrap gap-2">
+            {idea.venueLinks.map((venue, index) => (
+              <a
+                key={index}
+                href={venue.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium transition-colors"
+              >
+                <MapPin className="w-3 h-3" />
+                {venue.name}
+              </a>
+            ))}
+          </div>
         </div>
       )}
 
