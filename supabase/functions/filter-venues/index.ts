@@ -69,8 +69,9 @@ RULES:
 1. Each idea has exactly ${numActivities} activities
 2. Activities must be within 5 miles of each other
 3. NO venue used twice across all ideas
-4. MAX 1 restaurant per date idea
-5. Pick variety of categories (don't do 4 identical dates)
+4. NEVER use the same venue twice within a single date idea
+5. MAX 1 restaurant per date idea
+6. Pick variety of categories (don't do 4 identical dates)
 6. Consider flow based on duration:
    - quick (1 activity): simple, standalone activity
    - afternoon (3 activities): lunch + 2 activities OR activity + lunch + activity
@@ -143,12 +144,24 @@ Make each date feel different. Prioritize highly-rated venues close together.`;
       }
       
       // Validate each date idea
-      result.dateIdeas = result.dateIdeas.filter((idea: any) => 
-        idea.venueIndices && 
-        Array.isArray(idea.venueIndices) && 
-        idea.venueIndices.length > 0 &&
-        idea.venueIndices.every((i: number) => i >= 0 && i < venues.length)
-      );
+      result.dateIdeas = result.dateIdeas.filter((idea: any) => {
+        if (!idea.venueIndices || !Array.isArray(idea.venueIndices) || idea.venueIndices.length === 0) {
+          return false;
+        }
+        
+        // Check all indices are valid
+        const validIndices = idea.venueIndices.every((i: number) => i >= 0 && i < venues.length);
+        if (!validIndices) return false;
+        
+        // Check for duplicates within this single date idea
+        const uniqueIndices = new Set(idea.venueIndices);
+        if (uniqueIndices.size !== idea.venueIndices.length) {
+          console.log(`Removing date idea with duplicate venues: ${idea.venueIndices}`);
+          return false;
+        }
+        
+        return true;
+      });
       
     } catch (e) {
       console.error("Failed to parse AI response:", content);
