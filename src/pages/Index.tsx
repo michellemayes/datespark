@@ -120,62 +120,57 @@ const Index = () => {
       const ideas: DateIdea[] = [];
       const ideasToGenerate = Math.min(4, Math.floor(allPlaces.length / 2));
 
-      // Helper to generate creative date titles
-      const generateDateTitle = (venues: any[]) => {
-        const types = venues.flatMap(v => v.types || []);
-        const titleOptions = [
-          { condition: types.includes('museum') && types.includes('cafe'), title: "Cultural Connection" },
-          { condition: types.includes('art_gallery') && types.includes('bar'), title: "Artistic Adventure" },
-          { condition: types.includes('park') && types.includes('restaurant'), title: "Green & Gastronomy" },
-          { condition: types.includes('bar') && types.includes('restaurant'), title: "Night on the Town" },
-          { condition: types.some(t => t.includes('cafe')), title: "Cozy Corner Crawl" },
-          { condition: types.includes('museum'), title: "Museum & More" },
-          { condition: types.includes('park'), title: "Urban Explorer" },
-          { condition: types.includes('art_gallery'), title: "Gallery Hopping" },
-          { condition: types.includes('bar') && !types.includes('movie_theater'), title: "Bar Hopping Adventure" },
-        ];
-        
-        const match = titleOptions.find(opt => opt.condition);
-        return match ? match.title : "Evening Experience";
-      };
-
-      // Generate varied date ideas
+      // Generate varied date ideas with AI-powered titles and descriptions
+      const ideaPromises = [];
+      
       for (let i = 0; i < ideasToGenerate && allPlaces.length >= 2; i++) {
         const startIdx = i * 2;
         const venuesForIdea = allPlaces.slice(startIdx, startIdx + 3).filter(v => v.location);
         
         if (venuesForIdea.length >= 2) {
-          const venueLinks = venuesForIdea
-            .filter(v => v.details?.website)
-            .map(v => ({ name: v.name, url: v.details.website, type: 'website' }));
+          ideaPromises.push(
+            supabase.functions.invoke('generate-date-content', {
+              body: { venues: venuesForIdea }
+            }).then(({ data: contentData, error: contentError }) => {
+              if (contentError) {
+                console.error('Error generating content:', contentError);
+                return null;
+              }
 
-          const mapLocations = venuesForIdea
-            .filter(v => v.location)
-            .map(v => ({
-              name: v.name,
-              lat: v.location.lat,
-              lng: v.location.lng
-            }));
+              const venueLinks = venuesForIdea
+                .filter(v => v.details?.website)
+                .map(v => ({ name: v.name, url: v.details.website, type: 'website' }));
 
-          ideas.push({
-            id: `idea-${i}`,
-            title: generateDateTitle(venuesForIdea),
-            description: venuesForIdea[2] 
-              ? `Start at ${venuesForIdea[0].name}, then ${venuesForIdea[1].name}, and finish at ${venuesForIdea[2].name}`
-              : `Begin your evening at ${venuesForIdea[0].name} followed by ${venuesForIdea[1].name}`,
-            budget: preferences.budget === 0 ? "Free" : `$${preferences.budget}`,
-            duration: preferences.duration,
-            dressCode: preferences.dressCode,
-            location: preferences.location,
-            activities: venuesForIdea.map(v => `${v.name} - ${v.address}`),
-            foodSpots: venuesForIdea
-              .filter(v => v.types?.includes('restaurant') || v.types?.includes('cafe') || v.types?.includes('bar'))
-              .map(v => v.name),
-            venueLinks,
-            mapLocations
-          });
+              const mapLocations = venuesForIdea
+                .filter(v => v.location)
+                .map(v => ({
+                  name: v.name,
+                  lat: v.location.lat,
+                  lng: v.location.lng
+                }));
+
+              return {
+                id: `idea-${i}`,
+                title: contentData?.title || `${venuesForIdea[0].name} & More`,
+                description: contentData?.description || `Visit ${venuesForIdea.map(v => v.name).join(', ')}`,
+                budget: preferences.budget === 0 ? "Free" : `$${preferences.budget}`,
+                duration: preferences.duration,
+                dressCode: preferences.dressCode,
+                location: preferences.location,
+                activities: venuesForIdea.map(v => `${v.name} - ${v.address}`),
+                foodSpots: venuesForIdea
+                  .filter(v => v.types?.includes('restaurant') || v.types?.includes('cafe') || v.types?.includes('bar'))
+                  .map(v => v.name),
+                venueLinks,
+                mapLocations
+              };
+            })
+          );
         }
       }
+
+      const generatedIdeasResults = await Promise.all(ideaPromises);
+      ideas.push(...generatedIdeasResults.filter(idea => idea !== null) as DateIdea[]);
 
       // Add backup ideas if needed
       if (ideas.length === 0) {
