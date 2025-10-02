@@ -1,73 +1,81 @@
-# Welcome to your Lovable project
+# Date Idea Generator
 
-## Project info
+A smart date planning app that helps you discover and save unique date ideas based on your location, preferences, and budget.
 
-**URL**: https://lovable.dev/projects/4204fc7f-f64a-44f3-a3df-fd0e553382da
+## Features
 
-## How can I edit this code?
+- **Location-Based Search**: Find date venues near you using Google Places API
+- **Smart Filtering**: Filter by activity type (restaurants, museums, parks, etc.), budget, and duration
+- **AI-Powered Suggestions**: Get personalized date itineraries with multiple venues
+- **Save Favorites**: Bookmark your favorite date ideas for later
+- **Interactive Maps**: View venue locations on an integrated map
+- **User Authentication**: Create an account to save and manage your date ideas across devices
 
-There are several ways of editing your application.
+## Technologies
 
-**Use Lovable**
+- **Frontend**: React, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn-ui components
+- **Backend**: Lovable Cloud (Supabase)
+- **APIs**: Google Maps & Places API
+- **State Management**: TanStack Query
+- **Authentication**: Supabase Auth
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4204fc7f-f64a-44f3-a3df-fd0e553382da) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js & npm ([install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
+- Google Maps API key
+- Lovable Cloud account (or Supabase project)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+1. Clone the repository:
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. Install dependencies:
+```sh
+npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Configure environment variables (automatically set up with Lovable Cloud)
+
+4. Start the development server:
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Usage
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. **Enter Your Location**: Start by entering your city or address
+2. **Set Your Preferences**: Choose activity type, budget range, and date duration
+3. **Get Suggestions**: Click "Find Date Ideas" to generate personalized recommendations
+4. **Save Favorites**: Click the heart icon to save ideas you like
+5. **View Saved Ideas**: Access your saved dates anytime from the navigation menu
 
-**Use GitHub Codespaces**
+## Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- `/src/pages` - Main application pages (Index, SavedIdeas, Auth)
+- `/src/components` - Reusable UI components
+- `/src/hooks` - Custom React hooks
+- `/src/integrations/supabase` - Backend integration
+- `/supabase/functions` - Edge functions for API integrations and AI processing
 
-## What technologies are used for this project?
+## Deployment
 
-This project is built with:
+Deploy your app via Lovable:
+1. Open your [Lovable project](https://lovable.dev/projects/4204fc7f-f64a-44f3-a3df-fd0e553382da)
+2. Click Share → Publish
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Custom Domain
 
-## How can I deploy this project?
+Connect a custom domain via Project > Settings > Domains in Lovable.
 
-Simply open [Lovable](https://lovable.dev/projects/4204fc7f-f64a-44f3-a3df-fd0e553382da) and click on Share -> Publish.
+Learn more: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain)
 
-## Can I connect a custom domain to my Lovable project?
+## License
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Built with [Lovable](https://lovable.dev)
