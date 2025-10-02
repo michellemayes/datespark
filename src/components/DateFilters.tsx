@@ -27,6 +27,7 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
   const [suggestions, setSuggestions] = useState<Array<{ description: string; place_id: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   
   const dietaryOptions = [
@@ -53,9 +54,11 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
     if (input.length < 3) {
       setSuggestions([]);
       setShowSuggestions(false);
+      setIsSearching(false);
       return;
     }
 
+    setIsSearching(true);
     try {
       const { data, error } = await supabase.functions.invoke('autocomplete-places', {
         body: { input }
@@ -63,6 +66,7 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
 
       if (error) {
         console.error('Autocomplete error:', error);
+        setIsSearching(false);
         return;
       }
 
@@ -70,6 +74,8 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
       setShowSuggestions(true);
     } catch (error) {
       console.error('Error searching locations:', error);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -81,10 +87,10 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
       clearTimeout(searchTimeout);
     }
 
-    // Set new timeout for debounced search
+    // Set new timeout for debounced search (reduced from 300ms to 150ms)
     const timeout = setTimeout(() => {
       searchLocations(value);
-    }, 300);
+    }, 150);
     
     setSearchTimeout(timeout);
   };
@@ -126,18 +132,25 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
           <Label className="text-base font-semibold">Your Location</Label>
         </div>
         <div className="relative" ref={suggestionsRef}>
-          <Input
-            type="text"
-            placeholder="Enter city, zip code, or address"
-            value={preferences.userLocation}
-            onChange={(e) => handleLocationInput(e.target.value)}
-            onFocus={() => {
-              if (suggestions.length > 0) {
-                setShowSuggestions(true);
-              }
-            }}
-            className="h-11"
-          />
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Enter city, zip code, or address"
+              value={preferences.userLocation}
+              onChange={(e) => handleLocationInput(e.target.value)}
+              onFocus={() => {
+                if (suggestions.length > 0) {
+                  setShowSuggestions(true);
+                }
+              }}
+              className="h-11"
+            />
+            {isSearching && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
+              </div>
+            )}
+          </div>
           {showSuggestions && suggestions.length > 0 && (
             <div className="absolute z-50 w-full mt-1 bg-background border-2 border-border rounded-lg shadow-glow max-h-60 overflow-y-auto">
               {suggestions.map((suggestion) => (
