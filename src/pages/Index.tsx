@@ -495,6 +495,21 @@ const Index = () => {
           </div>
 
           <div className="lg:col-span-2 space-y-6">
+            {generatedIdeas.length > 0 && (
+              <div className="flex items-center justify-center gap-2 flex-wrap p-6 bg-card border-2 border-border rounded-2xl shadow-playful">
+                {generatedIdeas.map((_, index) => (
+                  <Button
+                    key={index}
+                    variant={currentIdeaIndex === index ? "default" : "outline"}
+                    size="icon"
+                    onClick={() => setCurrentIdeaIndex(index)}
+                    className="h-10 w-10 rounded-full font-semibold transition-all hover:scale-110"
+                  >
+                    {index + 1}
+                  </Button>
+                ))}
+              </div>
+            )}
             {generatedIdeas.length === 0 ? (
               <div className="text-center py-16 space-y-4">
                 <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto">
@@ -506,27 +521,12 @@ const Index = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-2 flex-wrap">
-                  {generatedIdeas.map((_, index) => (
-                    <Button
-                      key={index}
-                      variant={currentIdeaIndex === index ? "default" : "outline"}
-                      size="icon"
-                      onClick={() => setCurrentIdeaIndex(index)}
-                      className="h-10 w-10 rounded-full font-semibold transition-all hover:scale-110"
-                    >
-                      {index + 1}
-                    </Button>
-                  ))}
-                </div>
-                <DateIdeaCard 
-                  key={generatedIdeas[currentIdeaIndex].id} 
-                  idea={generatedIdeas[currentIdeaIndex]} 
-                  onSave={handleSaveIdea}
-                  isSaved={savedIdeas.some(saved => saved.title === generatedIdeas[currentIdeaIndex].title)} 
-                />
-              </div>
+              <DateIdeaCard 
+                key={generatedIdeas[currentIdeaIndex].id} 
+                idea={generatedIdeas[currentIdeaIndex]} 
+                onSave={handleSaveIdea}
+                isSaved={savedIdeas.some(saved => saved.title === generatedIdeas[currentIdeaIndex].title)} 
+              />
             )}
           </div>
         </div>
