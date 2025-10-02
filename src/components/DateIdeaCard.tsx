@@ -34,8 +34,8 @@ export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProp
     setSaved(!saved);
     onSave?.(idea.id);
     toast({
-      title: saved ? "Removed from saved" : "Saved!",
-      description: saved ? "Date idea removed from your list" : "Date idea added to your list",
+      title: saved ? "Removed from favorites" : "Added to favorites!",
+      description: saved ? "Date removed from your favorites" : "Date added to your favorites",
     });
   };
 

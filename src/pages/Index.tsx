@@ -298,7 +298,7 @@ const Index = () => {
             {user && (
               <Button variant="ghost" onClick={() => window.location.href = '/saved'}>
                 <Heart className="mr-2 h-4 w-4" />
-                Saved Ideas
+                Favorite Dates
               </Button>
             )}
             {user ? (
@@ -335,7 +335,7 @@ const Index = () => {
                 {user && (
                   <Button variant="outline" size="lg" onClick={() => window.location.href = '/saved'}>
                     <Calendar className="mr-2" />
-                    View Saved Ideas
+                    View Favorite Dates
                   </Button>
                 )}
               </div>

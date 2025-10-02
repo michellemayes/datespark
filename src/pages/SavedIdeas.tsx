@@ -44,7 +44,7 @@ const SavedIdeas = () => {
         <div className="text-center space-y-4 mb-12">
           <h1 className="text-4xl md:text-5xl font-bold">
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Your Saved Date Ideas
+              Your Favorite Dates
             </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -55,7 +55,7 @@ const SavedIdeas = () => {
         {savedIdeas.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-lg text-muted-foreground mb-4">
-              No saved date ideas yet
+              No favorite dates yet
             </p>
             <Button onClick={() => navigate("/")}>
               Generate Date Ideas
