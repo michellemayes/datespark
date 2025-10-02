@@ -107,34 +107,41 @@ const Index = () => {
           const types = v.types || [];
           const name = v.name?.toLowerCase() || '';
           
-          // Evening (after 5pm) - exclude ALL cafes, coffee shops, and breakfast places
+          // Evening - STRICT filtering for evening-only venues
           if (preferences.duration === 'evening') {
-            // Type-based exclusions
+            // Exclude ALL cafes, coffee shops, bakeries, breakfast places
             if (types.includes('cafe') || 
                 types.includes('coffee_shop') || 
-                types.includes('bakery')) return false;
+                types.includes('bakery') ||
+                types.includes('breakfast_restaurant')) return false;
             
-            // Name-based exclusions for common chains
-            const eveningExclusions = ['starbucks', 'coffee', 'cafe', 'dunkin', 'peet'];
+            // Name-based exclusions
+            const eveningExclusions = ['starbucks', 'coffee', 'cafe', 'dunkin', 'peet', 'caribou', 'dutch bros'];
             if (eveningExclusions.some(term => name.includes(term))) return false;
             
-            // Check opening hours if available
+            // Check opening hours - exclude if closes before 7pm
             if (v.opening_hours?.periods) {
               const now = new Date();
-              const eveningHour = 19; // 7 PM
               const day = now.getDay();
-              
               const todayHours = v.opening_hours.periods.find((p: any) => p.open?.day === day);
               if (todayHours?.close) {
                 const closeHour = parseInt(todayHours.close.time.substring(0, 2));
-                // If closes before 7pm, exclude
-                if (closeHour < eveningHour) return false;
+                if (closeHour < 19) return false; // Closes before 7pm
               }
             }
+            
+            // Only keep evening-appropriate: restaurants, bars, theaters, entertainment
+            const eveningTypes = ['restaurant', 'bar', 'night_club', 'movie_theater', 'bowling_alley', 'museum', 'art_gallery'];
+            if (!types.some(t => eveningTypes.includes(t))) return false;
           }
           
-          // Morning/Quick - no bars/nightclubs
-          if (preferences.duration === 'morning' || preferences.duration === 'quick') {
+          // Afternoon - exclude bars/nightclubs, include lunch spots
+          if (preferences.duration === 'afternoon') {
+            if (types.includes('night_club')) return false;
+          }
+          
+          // Quick/Morning - exclude bars/nightclubs
+          if (preferences.duration === 'quick' || preferences.duration === 'morning') {
             if (types.includes('bar') || types.includes('night_club')) return false;
           }
           
@@ -143,7 +150,7 @@ const Index = () => {
       };
 
       const filteredPlaces = filterByDuration(allPlaces);
-      console.log(`Filtered to ${filteredPlaces.length} duration-appropriate venues`);
+      console.log(`Duration: ${preferences.duration}, Filtered to ${filteredPlaces.length} appropriate venues from ${allPlaces.length} total`);
 
       // Let AI create 4 unique date ideas
       const { data: aiResult, error: aiError } = await supabase.functions.invoke('filter-venues', {

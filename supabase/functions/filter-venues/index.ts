@@ -54,7 +54,7 @@ serve(async (req) => {
       return `${i}. ${v.name} [${category}] - ${distance}mi away - Rating: ${v.rating || 'N/A'} - Types: ${types.slice(0, 3).join(', ')}`;
     }).join('\n');
 
-    const prompt = `Create 4 diverse date ideas using these venues.
+    const prompt = `Create 4 diverse date ideas using these venues. CRITICAL: Respect the duration "${preferences.duration}" for timing.
 
 PREFERENCES:
 - Duration: ${preferences.duration}
@@ -65,6 +65,12 @@ PREFERENCES:
 VENUES (${venues.length} available):
 ${venueList}
 
+DURATION REQUIREMENTS - MUST FOLLOW:
+${preferences.duration === 'quick' ? '- Quick (1-2 hours): Pick ONE simple activity like a cafe, park, or museum visit' : ''}
+${preferences.duration === 'afternoon' ? '- Afternoon (3-4 hours): Pick THREE activities suitable for daytime (12pm-5pm). Include lunch spot + 2 activities like museums, parks, cafes, shopping' : ''}
+${preferences.duration === 'evening' ? '- Evening (4-5 hours): Pick TWO activities suitable for evening (6pm-10pm). Must include dinner OR drinks. NO cafes/coffee shops. Focus on restaurants, bars, theaters, entertainment' : ''}
+${preferences.duration === 'full-day' ? '- Full Day (6-8 hours): Pick FOUR activities spanning morning through evening. Include: breakfast/brunch spot, daytime activities, lunch, and evening activity' : ''}
+
 RULES:
 1. Each idea has exactly ${numActivities} activities
 2. Activities must be within 5 miles of each other
@@ -72,11 +78,7 @@ RULES:
 4. NEVER use the same venue twice within a single date idea
 5. MAX 1 restaurant per date idea
 6. Pick variety of categories (don't do 4 identical dates)
-6. Consider flow based on duration:
-   - quick (1 activity): simple, standalone activity
-   - afternoon (3 activities): lunch + 2 activities OR activity + lunch + activity
-   - evening (2 activities): dinner + one activity OR activity + drinks
-   - full-day (4 activities): breakfast/brunch + activity + lunch + activity
+7. MATCH VENUE TYPES TO TIME OF DAY - ${preferences.duration === 'evening' ? 'ONLY evening-appropriate venues (restaurants, bars, entertainment)' : preferences.duration === 'afternoon' ? 'ONLY afternoon-appropriate venues (lunch spots, museums, parks)' : 'time-appropriate venues'}
 
 Return JSON:
 {
@@ -84,15 +86,11 @@ Return JSON:
     {
       "venueIndices": [0, 15],
       "theme": "Cultural Evening"
-    },
-    {
-      "venueIndices": [3, 8],
-      "theme": "Casual Fun"
     }
   ]
 }
 
-Make each date feel different. Prioritize highly-rated venues close together.`;
+Prioritize highly-rated venues close together that match the ${preferences.duration} timeframe.`;
 
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
