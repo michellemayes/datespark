@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { DateIdeaCard } from "@/components/DateIdeaCard";
 import { useSavedIdeas } from "@/hooks/useSavedIdeas";
+import { Footer } from "@/components/Footer";
 import { ArrowLeft } from "lucide-react";
 
 const SavedIdeas = () => {
@@ -30,8 +31,8 @@ const SavedIdeas = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
+      <div className="container mx-auto px-4 py-8 flex-1">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -91,6 +92,8 @@ const SavedIdeas = () => {
           </div>
         )}
       </div>
+      
+      <Footer />
     </div>
   );
 };

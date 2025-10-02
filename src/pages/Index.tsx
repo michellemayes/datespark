@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSavedIdeas } from "@/hooks/useSavedIdeas";
 import { AuthModal } from "@/components/AuthModal";
+import { Footer } from "@/components/Footer";
 import heroImage from "@/assets/hero-couple.jpg";
 
 const Index = () => {
@@ -441,6 +442,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      <Footer />
     </div>
   );
 };
