@@ -91,7 +91,7 @@ CRITICAL RULES:
 3. NO venue used twice across all ${numIdeas} ideas
 4. NEVER use the same venue twice within a single date idea
 5. Activities must be within 5 miles of each other
-6. MAX 1 restaurant per date idea
+6. MAX 1 restaurant per date idea${numActivities < 3 ? ' (and for dates with less than 3 activities, avoid having 2 food/drink places - mix in other activities)' : ''}
 7. Pick variety of categories (don't do identical dates)
 8. MATCH VENUE TYPES TO TIME OF DAY - ${preferences.duration === 'evening' ? 'ONLY evening-appropriate venues (restaurants, bars, entertainment)' : preferences.duration === 'half' ? 'ONLY daytime-appropriate venues (lunch spots, museums, parks)' : 'time-appropriate venues'}
 
