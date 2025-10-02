@@ -25,7 +25,7 @@ const Index = () => {
   });
   const [generatedIdeas, setGeneratedIdeas] = useState<DateIdea[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const { savedIdeas, saveIdea } = useSavedIdeas(user?.id);
+  const { savedIdeas, saveIdea, refetch } = useSavedIdeas(user?.id);
 
   useEffect(() => {
     // Check current session
@@ -252,7 +252,7 @@ const Index = () => {
     }
   };
 
-  const handleSaveIdea = async (idea: DateIdea) => {
+  const handleSaveIdea = async (ideaId: string) => {
     if (!user) {
       toast({
         variant: "destructive",
@@ -263,18 +263,51 @@ const Index = () => {
       return;
     }
 
-    await saveIdea({
-      title: idea.title,
-      description: idea.description,
-      budget: idea.budget,
-      duration: idea.duration,
-      location: idea.location,
-      dress_code: idea.dressCode,
-      activities: idea.activities,
-      food_spots: idea.foodSpots,
-      map_locations: idea.mapLocations,
-      venue_links: idea.venueLinks,
-    });
+    const idea = generatedIdeas.find(i => i.id === ideaId);
+    if (!idea) return;
+
+    // Check if already saved
+    const existingSaved = savedIdeas.find(saved => saved.title === idea.title);
+    
+    if (existingSaved) {
+      // Unsave it
+      try {
+        const { error } = await supabase
+          .from("saved_date_ideas")
+          .delete()
+          .eq("id", existingSaved.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Removed from favorites",
+          description: "Date removed from your favorites",
+        });
+
+        // Refresh saved ideas
+        refetch();
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message,
+        });
+      }
+    } else {
+      // Save it
+      await saveIdea({
+        title: idea.title,
+        description: idea.description,
+        budget: idea.budget,
+        duration: idea.duration,
+        location: idea.location,
+        dress_code: idea.dressCode,
+        activities: idea.activities,
+        food_spots: idea.foodSpots,
+        map_locations: idea.mapLocations,
+        venue_links: idea.venueLinks,
+      });
+    }
   };
 
   if (loading) {
@@ -435,7 +468,12 @@ const Index = () => {
             ) : (
               <div className="space-y-6">
                 {generatedIdeas.map((idea) => (
-                  <DateIdeaCard key={idea.id} idea={idea} onSave={() => handleSaveIdea(idea)} />
+                  <DateIdeaCard 
+                    key={idea.id} 
+                    idea={idea} 
+                    onSave={handleSaveIdea}
+                    isSaved={savedIdeas.some(saved => saved.title === idea.title)} 
+                  />
                 ))}
               </div>
             )}
