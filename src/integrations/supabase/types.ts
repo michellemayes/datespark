@@ -14,7 +14,124 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      saved_date_ideas: {
+        Row: {
+          activities: Json | null
+          budget: string | null
+          created_at: string
+          description: string | null
+          dress_code: string | null
+          duration: string | null
+          food_spots: Json | null
+          id: string
+          location: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          activities?: Json | null
+          budget?: string | null
+          created_at?: string
+          description?: string | null
+          dress_code?: string | null
+          duration?: string | null
+          food_spots?: Json | null
+          id?: string
+          location?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          activities?: Json | null
+          budget?: string | null
+          created_at?: string
+          description?: string | null
+          dress_code?: string | null
+          duration?: string | null
+          food_spots?: Json | null
+          id?: string
+          location?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_date_ideas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          budget: string | null
+          dietary_restrictions: Json | null
+          dress_code: string | null
+          duration: string | null
+          id: string
+          location: string | null
+          search_radius: number | null
+          updated_at: string
+          user_id: string
+          user_location: string | null
+        }
+        Insert: {
+          budget?: string | null
+          dietary_restrictions?: Json | null
+          dress_code?: string | null
+          duration?: string | null
+          id?: string
+          location?: string | null
+          search_radius?: number | null
+          updated_at?: string
+          user_id: string
+          user_location?: string | null
+        }
+        Update: {
+          budget?: string | null
+          dietary_restrictions?: Json | null
+          dress_code?: string | null
+          duration?: string | null
+          id?: string
+          location?: string | null
+          search_radius?: number | null
+          updated_at?: string
+          user_id?: string
+          user_location?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

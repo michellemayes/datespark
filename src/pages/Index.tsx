@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DateFilters, DatePreferences } from "@/components/DateFilters";
 import { DateIdeaCard, DateIdea } from "@/components/DateIdeaCard";
-import { Heart, Sparkles, Calendar } from "lucide-react";
+import { Heart, Sparkles, Calendar, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useSavedIdeas } from "@/hooks/useSavedIdeas";
 import heroImage from "@/assets/hero-couple.jpg";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [preferences, setPreferences] = useState<DatePreferences>({
     budget: 50,
     duration: "evening",
@@ -17,6 +25,30 @@ const Index = () => {
   });
   const [generatedIdeas, setGeneratedIdeas] = useState<DateIdea[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const { savedIdeas, saveIdea } = useSavedIdeas(user?.id);
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been signed out successfully",
+    });
+  };
 
   const generateDateIdeas = () => {
     setIsGenerating(true);
@@ -67,12 +99,55 @@ const Index = () => {
     }, 1500);
   };
 
+  const handleSaveIdea = async (idea: DateIdea) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Sign in required",
+        description: "Please sign in to save date ideas",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    await saveIdea({
+      title: idea.title,
+      description: idea.description,
+      budget: idea.budget,
+      duration: idea.duration,
+      location: idea.location,
+      dress_code: idea.dressCode,
+      activities: idea.activities,
+      food_spots: idea.foodSpots,
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
         <div className="container mx-auto px-4 py-16 relative z-10">
+          <div className="flex justify-end mb-4">
+            {user ? (
+              <Button variant="ghost" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            ) : (
+              <Button variant="ghost" onClick={() => navigate("/auth")}>
+                Sign In
+              </Button>
+            )}
+          </div>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 animate-slide-up">
               <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
@@ -93,10 +168,12 @@ const Index = () => {
                   <Sparkles className="mr-2" />
                   Find Your Perfect Date
                 </Button>
-                <Button variant="outline" size="lg">
-                  <Calendar className="mr-2" />
-                  View Saved Ideas
-                </Button>
+                {user && (
+                  <Button variant="outline" size="lg" onClick={() => document.getElementById('saved')?.scrollIntoView({ behavior: 'smooth' })}>
+                    <Calendar className="mr-2" />
+                    View Saved Ideas ({savedIdeas.length})
+                  </Button>
+                )}
               </div>
             </div>
             <div className="relative animate-float">
@@ -195,13 +272,48 @@ const Index = () => {
             ) : (
               <div className="space-y-6">
                 {generatedIdeas.map((idea) => (
-                  <DateIdeaCard key={idea.id} idea={idea} />
+                  <DateIdeaCard key={idea.id} idea={idea} onSave={() => handleSaveIdea(idea)} />
                 ))}
               </div>
             )}
           </div>
         </div>
       </section>
+
+      {/* Saved Ideas Section */}
+      {user && savedIdeas.length > 0 && (
+        <section id="saved" className="container mx-auto px-4 py-16">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Your Saved Date Ideas
+              </span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Your personal collection of romantic date ideas
+            </p>
+          </div>
+          <div className="space-y-6 max-w-4xl mx-auto">
+            {savedIdeas.map((idea) => (
+              <DateIdeaCard 
+                key={idea.id} 
+                idea={{
+                  id: idea.id,
+                  title: idea.title,
+                  description: idea.description,
+                  budget: idea.budget,
+                  duration: idea.duration,
+                  location: idea.location,
+                  dressCode: idea.dress_code,
+                  activities: idea.activities,
+                  foodSpots: idea.food_spots,
+                }} 
+                isSaved={true}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };
