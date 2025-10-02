@@ -12,6 +12,8 @@ export interface SavedDateIdea {
   dress_code: string;
   activities: string[];
   food_spots?: string[];
+  map_locations?: Array<{ name: string; lat: number; lng: number }>;
+  venue_links?: Array<{ name: string; url: string; type?: string }>;
   created_at: string;
 }
 
@@ -41,6 +43,8 @@ export const useSavedIdeas = (userId: string | undefined) => {
         ...idea,
         activities: idea.activities as string[],
         food_spots: idea.food_spots as string[] | undefined,
+        map_locations: idea.map_locations as Array<{ name: string; lat: number; lng: number }> | undefined,
+        venue_links: idea.venue_links as Array<{ name: string; url: string; type?: string }> | undefined,
       }));
 
       setSavedIdeas(formattedData);
@@ -76,6 +80,8 @@ export const useSavedIdeas = (userId: string | undefined) => {
         dress_code: idea.dress_code,
         activities: idea.activities,
         food_spots: idea.food_spots,
+        map_locations: idea.map_locations,
+        venue_links: idea.venue_links,
       });
 
       if (error) throw error;

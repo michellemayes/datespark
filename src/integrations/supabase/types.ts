@@ -46,8 +46,10 @@ export type Database = {
           food_spots: Json | null
           id: string
           location: string | null
+          map_locations: Json | null
           title: string
           user_id: string
+          venue_links: Json | null
         }
         Insert: {
           activities?: Json | null
@@ -59,8 +61,10 @@ export type Database = {
           food_spots?: Json | null
           id?: string
           location?: string | null
+          map_locations?: Json | null
           title: string
           user_id: string
+          venue_links?: Json | null
         }
         Update: {
           activities?: Json | null
@@ -72,8 +76,10 @@ export type Database = {
           food_spots?: Json | null
           id?: string
           location?: string | null
+          map_locations?: Json | null
           title?: string
           user_id?: string
+          venue_links?: Json | null
         }
         Relationships: [
           {

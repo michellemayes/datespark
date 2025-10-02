@@ -273,6 +273,8 @@ const Index = () => {
       dress_code: idea.dressCode,
       activities: idea.activities,
       food_spots: idea.foodSpots,
+      map_locations: idea.mapLocations,
+      venue_links: idea.venueLinks,
     });
   };
 
@@ -292,7 +294,13 @@ const Index = () => {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
         <div className="container mx-auto px-4 py-16 relative z-10">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end gap-2 mb-4">
+            {user && (
+              <Button variant="ghost" onClick={() => window.location.href = '/saved'}>
+                <Heart className="mr-2 h-4 w-4" />
+                Saved Ideas
+              </Button>
+            )}
             {user ? (
               <Button variant="ghost" onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -325,9 +333,9 @@ const Index = () => {
                   Find Your Perfect Date
                 </Button>
                 {user && (
-                  <Button variant="outline" size="lg" onClick={() => document.getElementById('saved')?.scrollIntoView({ behavior: 'smooth' })}>
+                  <Button variant="outline" size="lg" onClick={() => window.location.href = '/saved'}>
                     <Calendar className="mr-2" />
-                    View Saved Ideas ({savedIdeas.length})
+                    View Saved Ideas
                   </Button>
                 )}
               </div>
@@ -435,43 +443,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* Saved Ideas Section */}
-      {user && savedIdeas.length > 0 && (
-        <section id="saved" className="container mx-auto px-4 py-16">
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold">
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Your Saved Date Ideas
-              </span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Your personal collection of romantic date ideas
-            </p>
-          </div>
-          <div className="space-y-6 max-w-4xl mx-auto">
-            {savedIdeas.map((idea) => (
-              <DateIdeaCard 
-                key={idea.id} 
-                idea={{
-                  id: idea.id,
-                  title: idea.title,
-                  description: idea.description,
-                  budget: idea.budget,
-                  duration: idea.duration,
-                  location: idea.location,
-                  dressCode: idea.dress_code,
-                  activities: idea.activities,
-                  foodSpots: idea.food_spots,
-                  venueLinks: [],
-                  mapLocations: [],
-                }} 
-                isSaved={true}
-              />
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 };
