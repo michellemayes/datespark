@@ -4,12 +4,14 @@ A smart date planning app that helps you discover and save unique date ideas bas
 
 ## Features
 
-- **Location-Based Search**: Find date venues near you using Google Places API
+- **Location-Based Search**: Find date venues near you using Google Places API with autocomplete
 - **Smart Filtering**: Filter by activity type (restaurants, museums, parks, etc.), budget, and duration
-- **AI-Powered Suggestions**: Get personalized date itineraries with multiple venues
-- **Save Favorites**: Bookmark your favorite date ideas for later
-- **Interactive Maps**: View venue locations on an integrated map
-- **User Authentication**: Create an account to save and manage your date ideas across devices
+- **AI-Powered Suggestions**: Get personalized date itineraries with multiple venues using advanced AI models
+- **Save Favorites**: Bookmark your favorite date ideas and manage them across sessions
+- **Rating & Reviews**: Add ratings and personal notes to your saved date ideas
+- **Interactive Maps**: View venue locations on an integrated Google Map
+- **User Authentication**: Secure email-based authentication to save and manage your date ideas across devices
+- **Responsive Design**: Beautiful, mobile-friendly interface that works on any device
 
 ## Technologies
 
@@ -58,11 +60,17 @@ npm run dev
 
 ## Project Structure
 
-- `/src/pages` - Main application pages (Index, SavedIdeas, Auth)
-- `/src/components` - Reusable UI components
-- `/src/hooks` - Custom React hooks
-- `/src/integrations/supabase` - Backend integration
-- `/supabase/functions` - Edge functions for API integrations and AI processing
+- `/src/pages` - Main application pages (Index, SavedIdeas, Auth, NotFound)
+- `/src/components` - Reusable UI components (DateIdeaCard, DateFilters, GoogleMap, AuthModal, ReviewModal, Footer)
+- `/src/hooks` - Custom React hooks (useSavedIdeas, use-mobile, use-toast)
+- `/src/integrations/supabase` - Backend integration and types
+- `/supabase/functions` - Edge functions:
+  - `autocomplete-places` - Location autocomplete
+  - `search-places` - Venue search
+  - `geocode-location` - Location geocoding
+  - `filter-venues` - AI-powered venue filtering
+  - `generate-date-content` - AI-generated date descriptions
+  - `get-maps-key` - Secure Maps API key retrieval
 
 ## Deployment
 
