@@ -32,8 +32,8 @@ serve(async (req) => {
 
     // Determine activities count based on duration
     let numActivities = 2;
-    if (preferences.duration === 'full-day') numActivities = 4;
-    else if (preferences.duration === 'afternoon') numActivities = 3;
+    if (preferences.duration === 'full-day') numActivities = 5;
+    else if (preferences.duration === 'afternoon' || preferences.duration === 'half-day') numActivities = 3;
     else if (preferences.duration === 'evening') numActivities = 2;
     else if (preferences.duration === 'quick') numActivities = 1;
 
@@ -67,9 +67,9 @@ ${venueList}
 
 DURATION REQUIREMENTS - MUST FOLLOW:
 ${preferences.duration === 'quick' ? '- Quick (1-2 hours): Pick ONE simple activity like a cafe, park, or museum visit' : ''}
-${preferences.duration === 'afternoon' ? '- Afternoon (3-4 hours): Pick THREE activities suitable for daytime (12pm-5pm). Include lunch spot + 2 activities like museums, parks, cafes, shopping' : ''}
+${preferences.duration === 'afternoon' || preferences.duration === 'half-day' ? '- Afternoon/Half Day (3-4 hours): Pick THREE activities suitable for daytime (12pm-5pm). Include lunch spot + 2 activities like museums, parks, cafes, shopping' : ''}
 ${preferences.duration === 'evening' ? '- Evening (4-5 hours): Pick TWO activities suitable for evening (6pm-10pm). Must include dinner OR drinks. NO cafes/coffee shops. Focus on restaurants, bars, theaters, entertainment' : ''}
-${preferences.duration === 'full-day' ? '- Full Day (6-8 hours): Pick FOUR activities spanning morning through evening. Include: breakfast/brunch spot, daytime activities, lunch, and evening activity' : ''}
+${preferences.duration === 'full-day' ? '- Full Day (6-8 hours): Pick FOUR TO FIVE activities spanning morning through evening. Include: breakfast/brunch spot, daytime activities, lunch, and evening activity' : ''}
 
 RULES:
 1. Each idea has exactly ${numActivities} activities
