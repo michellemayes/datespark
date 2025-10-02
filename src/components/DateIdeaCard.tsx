@@ -61,33 +61,54 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, isSaved = false }: DateId
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const shareText = `${idea.title}\n\n${idea.description}\n\nBudget: ${idea.budget} | Duration: ${idea.duration}\nDress Code: ${idea.dressCode}\n\nActivities:\n${idea.activities.join('\n')}`;
     
     // Try Web Share API first (mobile/supported browsers)
     if (navigator.share) {
-      navigator.share({
-        title: idea.title,
-        text: shareText,
-      }).catch((error) => {
+      try {
+        await navigator.share({
+          title: idea.title,
+          text: shareText,
+        });
+        toast({
+          title: "Shared successfully!",
+          description: "Date idea shared with your selected app",
+        });
+      } catch (error: any) {
+        // User cancelled the share dialog - don't show error
         if (error.name !== 'AbortError') {
-          console.error('Error sharing:', error);
+          // Fallback to clipboard if share fails
+          try {
+            await navigator.clipboard.writeText(shareText);
+            toast({
+              title: "Copied to clipboard!",
+              description: "Date idea details copied. Share it anywhere!",
+            });
+          } catch {
+            toast({
+              variant: "destructive",
+              title: "Could not share",
+              description: "Please try again",
+            });
+          }
         }
-      });
+      }
     } else {
       // Fallback to clipboard
-      navigator.clipboard.writeText(shareText).then(() => {
+      try {
+        await navigator.clipboard.writeText(shareText);
         toast({
           title: "Copied to clipboard!",
           description: "Date idea details copied. Share it anywhere!",
         });
-      }).catch(() => {
+      } catch {
         toast({
           variant: "destructive",
           title: "Could not copy",
           description: "Please try again",
         });
-      });
+      }
     }
   };
 
