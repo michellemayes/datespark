@@ -23,6 +23,13 @@ export interface DateIdea {
   date_went?: string | null;
   rating?: number | null;
   journal_entry?: string | null;
+  weather?: {
+    temperature: number;
+    condition: string;
+    description: string;
+    icon: string;
+  };
+  clothingRecommendation?: string;
 }
 
 interface DateIdeaCardProps {
@@ -170,6 +177,32 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
           <span className="font-medium capitalize">{idea.dressCode}</span>
         </div>
       </div>
+
+      {idea.weather && (
+        <div className="bg-muted/50 rounded-lg p-4 space-y-3 border border-border">
+          <h4 className="font-semibold text-sm flex items-center gap-2">
+            <span className="text-2xl">☀️</span>
+            Weather Forecast
+          </h4>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-3xl font-bold text-primary">{idea.weather.temperature}°F</span>
+              <div className="text-sm">
+                <p className="font-semibold">{idea.weather.condition}</p>
+                <p className="text-muted-foreground capitalize">{idea.weather.description}</p>
+              </div>
+            </div>
+          </div>
+          {idea.clothingRecommendation && (
+            <div className="bg-background rounded-md p-3 border border-border">
+              <p className="text-sm flex items-start gap-2">
+                <Shirt className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
+                <span><span className="font-semibold">What to wear:</span> {idea.clothingRecommendation}</span>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="space-y-2">
         <h4 className="font-semibold text-sm">Activities:</h4>

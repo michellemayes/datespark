@@ -76,6 +76,42 @@ const Index = () => {
         }
       }
 
+      // Get weather forecast if date is selected
+      let weatherData = null;
+      let clothingRecommendation = null;
+      
+      if (preferences.date && userCoords) {
+        try {
+          const { data: weather, error: weatherError } = await supabase.functions.invoke('get-weather', {
+            body: { 
+              lat: userCoords.lat, 
+              lng: userCoords.lng,
+              date: preferences.date.toISOString()
+            }
+          });
+          
+          if (!weatherError && weather) {
+            weatherData = weather;
+            console.log('Weather data:', weatherData);
+            
+            // Get AI clothing recommendation
+            const { data: clothing } = await supabase.functions.invoke('get-clothing-recommendation', {
+              body: {
+                weather: weatherData,
+                dressCode: preferences.dressCode,
+                location: preferences.location
+              }
+            });
+            
+            if (clothing?.recommendation) {
+              clothingRecommendation = clothing.recommendation;
+            }
+          }
+        } catch (error) {
+          console.error('Weather fetch error:', error);
+        }
+      }
+
       // Do broader search to get many options
       const radiusMeters = preferences.radiusMiles * 1609.34;
       const venueTypes = ['restaurant', 'cafe', 'bar', 'museum', 'art_gallery', 'park', 'tourist_attraction', 'campground', 'movie_theater', 'bowling_alley', 'night_club'];
@@ -207,7 +243,9 @@ const Index = () => {
           activities: venues.map(v => `${v.name} - ${v.address}`),
           foodSpots: venues.filter(v => v.types?.includes('restaurant') || v.types?.includes('cafe') || v.types?.includes('bar')).map(v => v.name),
           venueLinks,
-          mapLocations
+          mapLocations,
+          weather: weatherData || undefined,
+          clothingRecommendation: clothingRecommendation || undefined
         };
       });
 

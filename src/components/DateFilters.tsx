@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef } from "react";
+import { format } from "date-fns";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { DollarSign, Clock, Shirt, MapPin, Navigation, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DollarSign, Clock, Shirt, MapPin, Navigation, Building2, CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 export interface DatePreferences {
   budget: number;
@@ -15,6 +20,7 @@ export interface DatePreferences {
   location: string;
   userLocation: string;
   radiusMiles: number;
+  date?: Date;
 }
 
 interface DateFiltersProps {
@@ -150,6 +156,37 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
             </div>
           )}
         </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="w-5 h-5 text-primary" />
+          <Label className="text-base font-semibold">Date of Date</Label>
+        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full h-11 justify-start text-left font-normal",
+                !preferences.date && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {preferences.date ? format(preferences.date, "PPP") : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={preferences.date}
+              onSelect={(date) => onPreferencesChange({ ...preferences, date: date || undefined })}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              initialFocus
+              className="p-3 pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="space-y-4">

@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.filter-venues]
 verify_jwt = false
+
+[functions.get-weather]
+verify_jwt = false
+
+[functions.get-clothing-recommendation]
+verify_jwt = false
