@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, DollarSign, Calendar, Copy, Shirt, Trash2, Star as StarIcon, Star } from "lucide-react";
+import { Heart, MapPin, Clock, DollarSign, Calendar, Copy, Shirt, Trash2, Star as StarIcon, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
 import GoogleMap from "./GoogleMap";
@@ -53,6 +53,7 @@ interface DateIdeaCardProps {
 export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved = false, showReview = false }: DateIdeaCardProps) => {
   const [saved, setSaved] = useState(isSaved);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [currentHourIndex, setCurrentHourIndex] = useState(0);
   const { toast } = useToast();
 
   // Reset saved state when idea changes
@@ -229,15 +230,41 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
           
           {idea.weather?.hourlyForecast && idea.weather.hourlyForecast.length > 0 && (
             <div className="bg-background rounded-md p-3 border border-border">
-              <h5 className="text-sm font-semibold mb-3">Hourly Forecast</h5>
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {idea.weather.hourlyForecast.map((hour, index) => (
-                  <div key={index} className="flex flex-col items-center min-w-[60px] text-center">
-                    <p className="text-xs text-muted-foreground mb-1">{hour.time}</p>
-                    <span className="text-2xl mb-1">{getWeatherEmoji(hour.condition)}</span>
-                    <p className="text-sm font-semibold">{hour.temperature}°F</p>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between mb-3">
+                <h5 className="text-sm font-semibold">Hourly Forecast</h5>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setCurrentHourIndex(Math.max(0, currentHourIndex - 1))}
+                    disabled={currentHourIndex === 0}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setCurrentHourIndex(Math.min(idea.weather!.hourlyForecast!.length - 1, currentHourIndex + 1))}
+                    disabled={currentHourIndex === idea.weather.hourlyForecast.length - 1}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-col items-center py-2">
+                {(() => {
+                  const hour = idea.weather.hourlyForecast[currentHourIndex];
+                  return (
+                    <>
+                      <p className="text-xs text-muted-foreground mb-2">{hour.time}</p>
+                      <span className="text-5xl mb-2">{getWeatherEmoji(hour.condition)}</span>
+                      <p className="text-2xl font-semibold">{hour.temperature}°F</p>
+                      <p className="text-xs text-muted-foreground mt-1 capitalize">{hour.condition}</p>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           )}
