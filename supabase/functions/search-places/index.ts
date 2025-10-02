@@ -35,20 +35,20 @@ serve(async (req) => {
       let maxPriceLevel = 4;
       
       if (budget < 20) {
-        // Budget under $20: Only free and $ options
+        // Budget under $20: Free to $ options
         minPriceLevel = 0;
         maxPriceLevel = 1;
       } else if (budget < 40) {
-        // Budget $20-40: $ to $$ (exclude free, focus on affordable)
+        // Budget $20-40: $ to $$ 
         minPriceLevel = 1;
         maxPriceLevel = 2;
       } else if (budget < 75) {
-        // Budget $40-75: $$ to $$$ (exclude cheap, mid-range to upscale)
-        minPriceLevel = 2;
+        // Budget $40-75: $ to $$$ (more flexible range)
+        minPriceLevel = 1;
         maxPriceLevel = 3;
       } else {
-        // Budget $75+: $$$ to $$$$ (only upscale options)
-        minPriceLevel = 3;
+        // Budget $75+: $$ to $$$$ (keep expensive but don't exclude mid-range)
+        minPriceLevel = 2;
         maxPriceLevel = 4;
       }
       
