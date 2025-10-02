@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Heart, MapPin, Clock, DollarSign, Calendar, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
-import DateMapWrapper from "./DateMapWrapper";
 
 export interface DateIdea {
   id: string;
@@ -108,8 +107,15 @@ export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProp
 
       {idea.mapLocations && idea.mapLocations.length > 0 && (
         <div className="space-y-2">
-          <h4 className="font-semibold text-sm">Location Map:</h4>
-          <DateMapWrapper locations={idea.mapLocations} />
+          <h4 className="font-semibold text-sm">Venue Locations:</h4>
+          <div className="space-y-1">
+            {idea.mapLocations.map((location, index) => (
+              <div key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
+                <span>{location.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
