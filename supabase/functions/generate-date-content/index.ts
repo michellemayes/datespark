@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { venues } = await req.json();
+    const { venues, duration } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -23,13 +23,20 @@ serve(async (req) => {
     const venueTypes = venues.flatMap((v: any) => v.types || []);
     const uniqueTypes = [...new Set(venueTypes)].join(", ");
 
-    const prompt = `Generate a natural, appealing date night title and description for a date that includes these venues: ${venueNames}.
+    // Duration-specific context
+    const durationContext = duration === 'quick' ? 'a quick 1-2 hour outing' :
+                           duration === 'half' ? 'a half-day (3-4 hours) daytime experience' :
+                           duration === 'evening' ? 'an evening (2-3 hours) date' :
+                           duration === 'full' ? 'a full-day adventure spanning morning to evening' : 'a date';
+
+    const prompt = `Generate a natural, appealing date title and description for ${durationContext} that includes these venues: ${venueNames}.
 
 Venue types: ${uniqueTypes}
+Duration: ${duration}
 
 Requirements:
 - Title: Natural and descriptive (3-6 words). DO NOT use alliteration. Use simple, honest language. Examples: "Dinner and a Show", "Art Museum Date", "Local Food Tour", "Sunset Park Walk"
-- Description: One sentence describing what you'll do (25-40 words). Focus on the experience, not flowery language.
+- Description: One sentence describing what you'll do (25-40 words). Match the time of day to the duration (${duration}). Use words appropriate to the duration - for "full" use "day", for "evening" use "evening", for "half" use "afternoon", for "quick" be brief.
 
 Return ONLY a JSON object:
 {
@@ -58,12 +65,13 @@ Return ONLY a JSON object:
       console.error("AI gateway error:", response.status, errorText);
       
       // Return fallback content
+      const timePhrase = duration === 'evening' ? 'evening' : duration === 'full' ? 'day' : 'outing';
       return new Response(
         JSON.stringify({
           title: `${venues[0].name} & More`,
           description: venues.length === 2 
-            ? `Begin your evening at ${venues[0].name} followed by ${venues[1].name}`
-            : `Start at ${venues[0].name}, then ${venues[1].name}, and finish at ${venues[2].name}`
+            ? `Enjoy your ${timePhrase} at ${venues[0].name} followed by ${venues[1].name}`
+            : `Visit ${venues[0].name}, then ${venues[1].name}, and more`
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -82,11 +90,12 @@ Return ONLY a JSON object:
     } catch (e) {
       console.error("Failed to parse AI response:", content);
       // Return fallback
+      const timePhrase = duration === 'evening' ? 'evening' : duration === 'full' ? 'day' : 'outing';
       result = {
         title: `${venues[0].name} & More`,
         description: venues.length === 2 
-          ? `Begin your evening at ${venues[0].name} followed by ${venues[1].name}`
-          : `Start at ${venues[0].name}, then ${venues[1].name}, and finish at ${venues[2].name}`
+          ? `Enjoy your ${timePhrase} at ${venues[0].name} followed by ${venues[1].name}`
+          : `Visit ${venues[0].name}, then ${venues[1].name}, and more`
       };
     }
 

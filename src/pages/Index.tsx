@@ -186,7 +186,7 @@ const Index = () => {
         if (venues.length === 0) return null;
 
         const { data: contentData } = await supabase.functions.invoke('generate-date-content', {
-          body: { venues }
+          body: { venues, duration: preferences.duration }
         });
 
         const venueLinks = venues
