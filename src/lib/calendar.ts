@@ -53,6 +53,13 @@ export const scheduleDate = (idea: DateIdea): void => {
   const description = [
     idea.description,
     '',
+    ...(idea.weather 
+      ? [
+          `🌤️ Weather: ${idea.weather.temperature}°F, ${idea.weather.description}`,
+          ...(idea.clothingRecommendation ? [`👔 What to wear: ${idea.clothingRecommendation}`] : []),
+          ''
+        ]
+      : []),
     '📋 Activities:',
     ...idea.activities.map(a => `• ${a}`),
     '',

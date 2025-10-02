@@ -74,13 +74,29 @@ serve(async (req) => {
       }
     }
 
+    // Get hourly forecast for the date (next 8 hours from the target time)
+    const hourlyForecast = data.list
+      .filter((forecast: any) => {
+        const forecastTime = new Date(forecast.dt * 1000);
+        const timeDiff = forecastTime.getTime() - targetTime;
+        return timeDiff >= 0 && timeDiff <= 8 * 60 * 60 * 1000; // Next 8 hours
+      })
+      .slice(0, 8)
+      .map((forecast: any) => ({
+        time: new Date(forecast.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+        temperature: Math.round(forecast.main.temp),
+        condition: forecast.weather[0].main,
+        icon: forecast.weather[0].icon
+      }));
+
     const weatherData = {
       temperature: Math.round(closestForecast.main.temp),
       condition: closestForecast.weather[0].main,
       description: closestForecast.weather[0].description,
       icon: closestForecast.weather[0].icon,
       humidity: closestForecast.main.humidity,
-      windSpeed: Math.round(closestForecast.wind.speed)
+      windSpeed: Math.round(closestForecast.wind.speed),
+      hourlyForecast
     };
 
     console.log('Weather data:', weatherData);

@@ -28,6 +28,12 @@ export interface DateIdea {
     condition: string;
     description: string;
     icon: string;
+    hourlyForecast?: Array<{
+      time: string;
+      temperature: number;
+      condition: string;
+      icon: string;
+    }>;
   };
   clothingRecommendation?: string;
 }
@@ -79,8 +85,27 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
     }
   };
 
+  const getWeatherEmoji = (condition: string) => {
+    const emojiMap: Record<string, string> = {
+      'Clear': '☀️',
+      'Clouds': '☁️',
+      'Rain': '🌧️',
+      'Drizzle': '🌦️',
+      'Thunderstorm': '⛈️',
+      'Snow': '❄️',
+      'Mist': '🌫️',
+      'Fog': '🌫️',
+      'Haze': '🌫️'
+    };
+    return emojiMap[condition] || '🌤️';
+  };
+
   const handleShare = async () => {
-    const shareText = `${idea.title}\n\n${idea.description}\n\nBudget: ${idea.budget} | Duration: ${idea.duration}\nDress Code: ${idea.dressCode}\n\nActivities:\n${idea.activities.join('\n')}`;
+    const weatherText = idea.weather 
+      ? `\n\n🌤️ Weather: ${idea.weather.temperature}°F, ${idea.weather.description}\n👔 What to wear: ${idea.clothingRecommendation}`
+      : '';
+    
+    const shareText = `${idea.title}\n\n${idea.description}\n\nBudget: ${idea.budget} | Duration: ${idea.duration}\nDress Code: ${idea.dressCode}${weatherText}\n\nActivities:\n${idea.activities.join('\n')}`;
     
     // Try Web Share API first (mobile/supported browsers)
     if (navigator.share) {
@@ -199,6 +224,21 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
                 <Shirt className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
                 <span><span className="font-semibold">What to wear:</span> {idea.clothingRecommendation}</span>
               </p>
+            </div>
+          )}
+          
+          {idea.weather?.hourlyForecast && idea.weather.hourlyForecast.length > 0 && (
+            <div className="bg-background rounded-md p-3 border border-border">
+              <h5 className="text-sm font-semibold mb-3">Hourly Forecast</h5>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {idea.weather.hourlyForecast.map((hour, index) => (
+                  <div key={index} className="flex flex-col items-center min-w-[60px] text-center">
+                    <p className="text-xs text-muted-foreground mb-1">{hour.time}</p>
+                    <span className="text-2xl mb-1">{getWeatherEmoji(hour.condition)}</span>
+                    <p className="text-sm font-semibold">{hour.temperature}°F</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
