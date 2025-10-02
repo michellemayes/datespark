@@ -470,8 +470,8 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
+        <div className="grid lg:grid-cols-3 gap-8 items-start">
+          <div className="lg:col-span-1 lg:sticky lg:top-4">
             <DateFilters preferences={preferences} onPreferencesChange={setPreferences} />
             <Button
               onClick={generateDateIdeas}
@@ -506,31 +506,19 @@ const Index = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between mb-4">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentIdeaIndex(Math.max(0, currentIdeaIndex - 1))}
-                    disabled={currentIdeaIndex === 0}
-                    className="h-12 w-12"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                  <div className="text-center">
-                    <span className="text-sm font-semibold text-muted-foreground">
-                      {currentIdeaIndex + 1} of {generatedIdeas.length}
-                    </span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentIdeaIndex(Math.min(generatedIdeas.length - 1, currentIdeaIndex + 1))}
-                    disabled={currentIdeaIndex === generatedIdeas.length - 1}
-                    className="h-12 w-12"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
+              <div className="space-y-4">
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  {generatedIdeas.map((_, index) => (
+                    <Button
+                      key={index}
+                      variant={currentIdeaIndex === index ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => setCurrentIdeaIndex(index)}
+                      className="h-10 w-10 rounded-full font-semibold transition-all hover:scale-110"
+                    >
+                      {index + 1}
+                    </Button>
+                  ))}
                 </div>
                 <DateIdeaCard 
                   key={generatedIdeas[currentIdeaIndex].id} 
