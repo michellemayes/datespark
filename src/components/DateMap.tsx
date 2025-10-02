@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -14,17 +14,24 @@ interface DateMapProps {
 }
 
 const DateMap = ({ locations }: DateMapProps) => {
+  const [isReady, setIsReady] = useState(false);
+
   // Fix for default marker icons in Leaflet - run once on mount
   useEffect(() => {
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    });
+    try {
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      });
+      setIsReady(true);
+    } catch (error) {
+      console.error('Error initializing Leaflet icons:', error);
+    }
   }, []);
 
-  if (!locations || locations.length === 0) return null;
+  if (!locations || locations.length === 0 || !isReady) return null;
 
   // Calculate center point from all locations
   const centerLat = locations.reduce((sum, loc) => sum + loc.lat, 0) / locations.length;
