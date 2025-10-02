@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt } from "lucide-react";
+import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
 import GoogleMap from "./GoogleMap";
@@ -23,10 +23,11 @@ export interface DateIdea {
 interface DateIdeaCardProps {
   idea: DateIdea;
   onSave?: (id: string) => void;
+  onDelete?: (id: string) => void;
   isSaved?: boolean;
 }
 
-export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProps) => {
+export const DateIdeaCard = ({ idea, onSave, onDelete, isSaved = false }: DateIdeaCardProps) => {
   const [saved, setSaved] = useState(isSaved);
   const { toast } = useToast();
 
@@ -97,14 +98,26 @@ export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProp
           <h3 className="text-2xl font-bold text-primary">{idea.title}</h3>
           <p className="text-sm text-muted-foreground">{idea.description}</p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleSave}
-          className={saved ? "text-primary" : "text-muted-foreground"}
-        >
-          <Heart className={saved ? "fill-current" : ""} />
-        </Button>
+        <div className="flex gap-1">
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(idea.id)}
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSave}
+            className={saved ? "text-primary" : "text-muted-foreground"}
+          >
+            <Heart className={saved ? "fill-current" : ""} />
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
