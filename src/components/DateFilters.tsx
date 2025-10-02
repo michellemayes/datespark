@@ -4,7 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { DollarSign, Clock, Shirt, MapPin } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { DollarSign, Clock, Shirt, MapPin, Navigation } from "lucide-react";
 
 export interface DatePreferences {
   budget: number;
@@ -12,6 +13,8 @@ export interface DatePreferences {
   dressCode: string;
   location: string;
   dietary: string[];
+  userLocation: string;
+  radiusMiles: number;
 }
 
 interface DateFiltersProps {
@@ -32,6 +35,10 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
     onPreferencesChange({ ...preferences, budget: value[0] });
   };
 
+  const handleRadiusChange = (value: number[]) => {
+    onPreferencesChange({ ...preferences, radiusMiles: value[0] });
+  };
+
   const handleDietaryChange = (option: string, checked: boolean) => {
     const newDietary = checked
       ? [...preferences.dietary, option]
@@ -49,6 +56,43 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
 
   return (
     <Card className="p-6 space-y-6 bg-card border-2 border-border shadow-playful">
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Navigation className="w-5 h-5 text-primary" />
+          <Label className="text-base font-semibold">Your Location</Label>
+        </div>
+        <Input
+          type="text"
+          placeholder="Enter city, zip code, or address"
+          value={preferences.userLocation}
+          onChange={(e) => onPreferencesChange({ ...preferences, userLocation: e.target.value })}
+          className="h-11"
+        />
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-secondary" />
+          <Label className="text-base font-semibold">Search Radius</Label>
+        </div>
+        <div className="space-y-3">
+          <Slider
+            value={[preferences.radiusMiles]}
+            onValueChange={handleRadiusChange}
+            max={50}
+            min={1}
+            step={1}
+            className="w-full"
+          />
+          <div className="flex justify-between items-center">
+            <span className="text-2xl font-bold text-secondary">{preferences.radiusMiles} mi</span>
+            <span className="text-sm text-muted-foreground">
+              Search within {preferences.radiusMiles} {preferences.radiusMiles === 1 ? 'mile' : 'miles'}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <DollarSign className="w-5 h-5 text-primary" />
@@ -109,8 +153,8 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-primary" />
-          <Label className="text-base font-semibold">Location Type</Label>
+          <Shirt className="w-5 h-5 text-primary" />
+          <Label className="text-base font-semibold">Venue Type</Label>
         </div>
         <Select value={preferences.location} onValueChange={(value) => onPreferencesChange({ ...preferences, location: value })}>
           <SelectTrigger className="h-11">

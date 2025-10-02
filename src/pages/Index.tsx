@@ -12,6 +12,8 @@ const Index = () => {
     dressCode: "smart-casual",
     location: "mixed",
     dietary: [],
+    userLocation: "",
+    radiusMiles: 10,
   });
   const [generatedIdeas, setGeneratedIdeas] = useState<DateIdea[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
