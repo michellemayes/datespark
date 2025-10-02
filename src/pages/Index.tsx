@@ -78,7 +78,7 @@ const Index = () => {
 
       // Do broader search to get many options
       const radiusMeters = preferences.radiusMiles * 1609.34;
-      const venueTypes = ['restaurant', 'cafe', 'bar', 'museum', 'art_gallery', 'park', 'movie_theater', 'bowling_alley', 'night_club'];
+      const venueTypes = ['restaurant', 'cafe', 'bar', 'museum', 'art_gallery', 'park', 'tourist_attraction', 'campground', 'movie_theater', 'bowling_alley', 'night_club'];
       
       const searchPromises = venueTypes.map(type =>
         supabase.functions.invoke('search-places', {
@@ -131,7 +131,7 @@ const Index = () => {
             }
             
             // Only keep evening-appropriate: restaurants, bars, theaters, entertainment
-            const eveningTypes = ['restaurant', 'bar', 'night_club', 'movie_theater', 'bowling_alley', 'museum', 'art_gallery'];
+            const eveningTypes = ['restaurant', 'bar', 'night_club', 'movie_theater', 'bowling_alley', 'museum', 'art_gallery', 'park'];
             if (!types.some(t => eveningTypes.includes(t))) return false;
           }
           

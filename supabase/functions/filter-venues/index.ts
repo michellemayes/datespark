@@ -84,10 +84,10 @@ ${venueList}
 - Each date needs exactly ${numActivities} different venues
 
 DURATION REQUIREMENTS:
-${preferences.duration === 'quick' ? '- Quick (1-2 hours): Pick exactly ONE simple activity like a cafe, park, or museum visit' : ''}
-${preferences.duration === 'half' ? '- Half Day (3-4 hours): Pick exactly THREE activities suitable for daytime (12pm-5pm). Include lunch spot + 2 activities like museums, parks, cafes, shopping' : ''}
-${preferences.duration === 'evening' ? '- Evening (2-3 hours): Pick exactly TWO activities suitable for evening (6pm-10pm). Must include dinner OR drinks. NO cafes/coffee shops. Focus on restaurants, bars, theaters, entertainment' : ''}
-${preferences.duration === 'full' ? '- Full Day (5+ hours): Pick exactly FOUR TO FIVE activities spanning morning through evening. Include: breakfast/brunch spot, daytime activities, lunch, and evening activity' : ''}
+${preferences.duration === 'quick' ? '- Quick (1-2 hours): Pick exactly ONE simple activity like a cafe, park, hiking trail, or museum visit' : ''}
+${preferences.duration === 'half' ? '- Half Day (3-4 hours): Pick exactly THREE activities suitable for daytime (12pm-5pm). Include lunch spot + 2 activities like museums, parks, hiking trails, outdoor activities, cafes, shopping' : ''}
+${preferences.duration === 'evening' ? '- Evening (2-3 hours): Pick exactly TWO activities suitable for evening (6pm-10pm). Must include dinner OR drinks. Can include parks for sunset views or evening walks. NO cafes/coffee shops. Focus on restaurants, bars, theaters, entertainment, scenic viewpoints' : ''}
+${preferences.duration === 'full' ? '- Full Day (5+ hours): Pick exactly FOUR TO FIVE activities spanning morning through evening. Include: breakfast/brunch spot, outdoor activities like hiking or parks, lunch, and evening activity. Prioritize nature and outdoor experiences when available' : ''}
 
 CRITICAL RULES:
 1. Each date idea MUST have exactly ${numActivities} venues in venueIndices array
