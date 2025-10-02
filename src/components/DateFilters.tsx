@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DollarSign, Clock, Shirt, MapPin, Navigation } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface DatePreferences {
   budget: number;
@@ -23,6 +24,11 @@ interface DateFiltersProps {
 }
 
 export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersProps) => {
+  const [suggestions, setSuggestions] = useState<Array<{ description: string; place_id: string }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  
   const dietaryOptions = [
     "Vegetarian",
     "Vegan",
@@ -30,6 +36,64 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
     "Dairy-Free",
     "Nut Allergies",
   ];
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const searchLocations = async (input: string) => {
+    if (input.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('autocomplete-places', {
+        body: { input }
+      });
+
+      if (error) {
+        console.error('Autocomplete error:', error);
+        return;
+      }
+
+      setSuggestions(data?.suggestions || []);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Error searching locations:', error);
+    }
+  };
+
+  const handleLocationInput = (value: string) => {
+    onPreferencesChange({ ...preferences, userLocation: value });
+    
+    // Clear existing timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    // Set new timeout for debounced search
+    const timeout = setTimeout(() => {
+      searchLocations(value);
+    }, 300);
+    
+    setSearchTimeout(timeout);
+  };
+
+  const handleSuggestionClick = (description: string) => {
+    onPreferencesChange({ ...preferences, userLocation: description });
+    setShowSuggestions(false);
+    setSuggestions([]);
+  };
 
   const handleBudgetChange = (value: number[]) => {
     onPreferencesChange({ ...preferences, budget: value[0] });
@@ -61,13 +125,34 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
           <Navigation className="w-5 h-5 text-primary" />
           <Label className="text-base font-semibold">Your Location</Label>
         </div>
-        <Input
-          type="text"
-          placeholder="Enter city, zip code, or address"
-          value={preferences.userLocation}
-          onChange={(e) => onPreferencesChange({ ...preferences, userLocation: e.target.value })}
-          className="h-11"
-        />
+        <div className="relative" ref={suggestionsRef}>
+          <Input
+            type="text"
+            placeholder="Enter city, zip code, or address"
+            value={preferences.userLocation}
+            onChange={(e) => handleLocationInput(e.target.value)}
+            onFocus={() => {
+              if (suggestions.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
+            className="h-11"
+          />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-background border-2 border-border rounded-lg shadow-glow max-h-60 overflow-y-auto">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion.place_id}
+                  onClick={() => handleSuggestionClick(suggestion.description)}
+                  className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0 flex items-center gap-2"
+                >
+                  <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span className="text-sm">{suggestion.description}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-4">

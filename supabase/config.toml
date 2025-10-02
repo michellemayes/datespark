@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.geocode-location]
 verify_jwt = false
+
+[functions.autocomplete-places]
+verify_jwt = false
