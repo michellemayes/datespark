@@ -497,15 +497,14 @@ const Index = () => {
           <div className="lg:col-span-2 space-y-6">
             {generatedIdeas.length > 0 && (
               <div className="flex items-center justify-center gap-2 flex-wrap p-6 bg-card border-2 border-border rounded-2xl shadow-playful">
-                {generatedIdeas.map((_, index) => (
+                {generatedIdeas.map((idea, index) => (
                   <Button
                     key={index}
                     variant={currentIdeaIndex === index ? "default" : "outline"}
-                    size="icon"
                     onClick={() => setCurrentIdeaIndex(index)}
-                    className="h-10 w-10 rounded-full font-semibold transition-all hover:scale-110"
+                    className="font-semibold transition-all hover:scale-105 px-6"
                   >
-                    {index + 1}
+                    {idea.title}
                   </Button>
                 ))}
               </div>
