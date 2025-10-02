@@ -32,8 +32,9 @@ serve(async (req) => {
 
     // Determine activities count based on duration
     let numActivities = 2;
-    if (preferences.duration === 'full-day') numActivities = 3;
-    else if (preferences.duration === 'evening') numActivities = 3;
+    if (preferences.duration === 'full-day') numActivities = 4;
+    else if (preferences.duration === 'afternoon') numActivities = 3;
+    else if (preferences.duration === 'evening') numActivities = 2;
     else if (preferences.duration === 'quick') numActivities = 1;
 
     // Create venue info with categories
@@ -70,7 +71,11 @@ RULES:
 3. NO venue used twice across all ideas
 4. MAX 1 restaurant per date idea
 5. Pick variety of categories (don't do 4 identical dates)
-6. Consider flow: ${preferences.duration === 'evening' ? 'dinner → activity' : preferences.duration === 'afternoon' ? 'lunch → activity' : preferences.duration === 'full-day' ? 'activity → lunch → activity' : 'simple activity'}
+6. Consider flow based on duration:
+   - quick (1 activity): simple, standalone activity
+   - afternoon (3 activities): lunch + 2 activities OR activity + lunch + activity
+   - evening (2 activities): dinner + one activity OR activity + drinks
+   - full-day (4 activities): breakfast/brunch + activity + lunch + activity
 
 Return JSON:
 {

@@ -23,18 +23,18 @@ serve(async (req) => {
     const venueTypes = venues.flatMap((v: any) => v.types || []);
     const uniqueTypes = [...new Set(venueTypes)].join(", ");
 
-    const prompt = `Generate a creative, romantic date night title and description for a date that includes these venues: ${venueNames}.
+    const prompt = `Generate a natural, appealing date night title and description for a date that includes these venues: ${venueNames}.
 
 Venue types: ${uniqueTypes}
 
 Requirements:
-- Title: Short, catchy, and romantic (3-5 words max). Examples: "Artistic Evening Adventure", "Cultural Night Out", "Garden & Gastronomy"
-- Description: One engaging sentence describing the date flow between venues (25-40 words). Be specific about what makes this combination special.
+- Title: Natural and descriptive (3-6 words). DO NOT use alliteration. Use simple, honest language. Examples: "Dinner and a Show", "Art Museum Date", "Local Food Tour", "Sunset Park Walk"
+- Description: One sentence describing what you'll do (25-40 words). Focus on the experience, not flowery language.
 
-Return ONLY a JSON object with this exact structure:
+Return ONLY a JSON object:
 {
-  "title": "your creative title",
-  "description": "your engaging description"
+  "title": "your natural title",
+  "description": "your clear description"
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
