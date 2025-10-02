@@ -19,7 +19,6 @@ const Index = () => {
     duration: "evening",
     dressCode: "smart-casual",
     location: "mixed",
-    dietary: [],
     userLocation: "",
     radiusMiles: 10,
   });
@@ -160,8 +159,7 @@ const Index = () => {
           preferences: {
             duration: preferences.duration,
             budget: preferences.budget,
-            dressCode: preferences.dressCode,
-            dietaryRestrictions: preferences.dietary
+            dressCode: preferences.dressCode
           }
         }
       });
@@ -361,7 +359,7 @@ const Index = () => {
             </div>
             <h3 className="text-xl font-bold">Personalized Ideas</h3>
             <p className="text-muted-foreground">
-              Filter by budget, time, style, and dietary needs to get dates that actually work for you
+              Filter by budget, time, and style to get dates that actually work for you
             </p>
           </div>
           <div className="text-center space-y-4 p-6 rounded-2xl bg-card border-2 border-border shadow-playful hover:shadow-glow transition-all animate-bounce-in" style={{ animationDelay: '0.1s' }}>

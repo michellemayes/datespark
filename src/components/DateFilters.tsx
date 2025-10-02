@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { DollarSign, Clock, Shirt, MapPin, Navigation } from "lucide-react";
+import { DollarSign, Clock, Shirt, MapPin, Navigation, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface DatePreferences {
@@ -13,7 +13,6 @@ export interface DatePreferences {
   duration: string;
   dressCode: string;
   location: string;
-  dietary: string[];
   userLocation: string;
   radiusMiles: number;
 }
@@ -29,14 +28,6 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  
-  const dietaryOptions = [
-    "Vegetarian",
-    "Vegan",
-    "Gluten-Free",
-    "Dairy-Free",
-    "Nut Allergies",
-  ];
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -107,13 +98,6 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
 
   const handleRadiusChange = (value: number[]) => {
     onPreferencesChange({ ...preferences, radiusMiles: value[0] });
-  };
-
-  const handleDietaryChange = (option: string, checked: boolean) => {
-    const newDietary = checked
-      ? [...preferences.dietary, option]
-      : preferences.dietary.filter((item) => item !== option);
-    onPreferencesChange({ ...preferences, dietary: newDietary });
   };
 
   const getBudgetLabel = () => {
@@ -243,7 +227,6 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
           <SelectContent>
             <SelectItem value="casual">Casual</SelectItem>
             <SelectItem value="smart-casual">Smart Casual</SelectItem>
-            <SelectItem value="dressy">Dressy</SelectItem>
             <SelectItem value="formal">Formal</SelectItem>
           </SelectContent>
         </Select>
@@ -251,7 +234,7 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <Shirt className="w-5 h-5 text-primary" />
+          <Building2 className="w-5 h-5 text-primary" />
           <Label className="text-base font-semibold">Venue Type</Label>
         </div>
         <Select value={preferences.location} onValueChange={(value) => onPreferencesChange({ ...preferences, location: value })}>
@@ -264,27 +247,6 @@ export const DateFilters = ({ preferences, onPreferencesChange }: DateFiltersPro
             <SelectItem value="mixed">Mixed</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-
-      <div className="space-y-3">
-        <Label className="text-base font-semibold">Dietary Restrictions</Label>
-        <div className="space-y-2">
-          {dietaryOptions.map((option) => (
-            <div key={option} className="flex items-center space-x-2">
-              <Checkbox
-                id={option}
-                checked={preferences.dietary.includes(option)}
-                onCheckedChange={(checked) => handleDietaryChange(option, checked as boolean)}
-              />
-              <label
-                htmlFor={option}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                {option}
-              </label>
-            </div>
-          ))}
-        </div>
       </div>
     </Card>
   );

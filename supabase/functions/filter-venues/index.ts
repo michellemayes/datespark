@@ -68,7 +68,11 @@ PREFERENCES:
 - Duration: ${preferences.duration} → ${numActivities} activities required
 - Budget: $${preferences.budget}
 - Dress Code: ${preferences.dressCode}
-- Dietary: ${preferences.dietaryRestrictions?.join(', ') || 'none'}
+
+DRESS CODE ALIGNMENT - CRITICAL:
+${preferences.dressCode === 'casual' ? '- Casual: Pick relaxed venues like parks, casual cafes, food trucks, bowling alleys, outdoor activities' : ''}
+${preferences.dressCode === 'smart-casual' ? '- Smart-Casual: Pick nice restaurants, wine bars, art galleries, museums, theaters, nicer cafes' : ''}
+${preferences.dressCode === 'formal' ? '- Formal: Pick upscale restaurants, fine dining, cocktail bars, opera, symphony, high-end venues only' : ''}
 
 AVAILABLE VENUES (TOTAL: ${venues.length}):
 ${venueList}
