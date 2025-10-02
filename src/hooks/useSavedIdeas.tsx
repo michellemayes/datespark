@@ -15,6 +15,9 @@ export interface SavedDateIdea {
   map_locations?: Array<{ name: string; lat: number; lng: number }>;
   venue_links?: Array<{ name: string; url: string; type?: string }>;
   created_at: string;
+  date_went?: string | null;
+  rating?: number | null;
+  journal_entry?: string | null;
 }
 
 export const useSavedIdeas = (userId: string | undefined) => {
@@ -125,5 +128,40 @@ export const useSavedIdeas = (userId: string | undefined) => {
     }
   };
 
-  return { savedIdeas, loading, saveIdea, deleteIdea, refetch: fetchSavedIdeas };
+  const updateJournal = async (
+    ideaId: string,
+    journalData: {
+      date_went: Date | null;
+      rating: number | null;
+      journal_entry: string;
+    }
+  ) => {
+    try {
+      const { error } = await supabase
+        .from("saved_date_ideas")
+        .update({
+          date_went: journalData.date_went?.toISOString() || null,
+          rating: journalData.rating,
+          journal_entry: journalData.journal_entry,
+        })
+        .eq("id", ideaId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Journal entry saved",
+      });
+
+      fetchSavedIdeas();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    }
+  };
+
+  return { savedIdeas, loading, saveIdea, deleteIdea, updateJournal, refetch: fetchSavedIdeas };
 };

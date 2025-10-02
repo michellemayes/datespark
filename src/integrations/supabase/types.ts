@@ -40,13 +40,16 @@ export type Database = {
           activities: Json | null
           budget: string | null
           created_at: string
+          date_went: string | null
           description: string | null
           dress_code: string | null
           duration: string | null
           food_spots: Json | null
           id: string
+          journal_entry: string | null
           location: string | null
           map_locations: Json | null
+          rating: number | null
           title: string
           user_id: string
           venue_links: Json | null
@@ -55,13 +58,16 @@ export type Database = {
           activities?: Json | null
           budget?: string | null
           created_at?: string
+          date_went?: string | null
           description?: string | null
           dress_code?: string | null
           duration?: string | null
           food_spots?: Json | null
           id?: string
+          journal_entry?: string | null
           location?: string | null
           map_locations?: Json | null
+          rating?: number | null
           title: string
           user_id: string
           venue_links?: Json | null
@@ -70,13 +76,16 @@ export type Database = {
           activities?: Json | null
           budget?: string | null
           created_at?: string
+          date_went?: string | null
           description?: string | null
           dress_code?: string | null
           duration?: string | null
           food_spots?: Json | null
           id?: string
+          journal_entry?: string | null
           location?: string | null
           map_locations?: Json | null
+          rating?: number | null
           title?: string
           user_id?: string
           venue_links?: Json | null

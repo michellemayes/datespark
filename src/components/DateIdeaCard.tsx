@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt, Trash2 } from "lucide-react";
+import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt, Trash2, BookOpen, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
 import GoogleMap from "./GoogleMap";
+import { JournalEntryModal } from "./JournalEntryModal";
+import { format } from "date-fns";
 
 export interface DateIdea {
   id: string;
@@ -18,17 +20,26 @@ export interface DateIdea {
   foodSpots?: string[];
   venueLinks?: Array<{ name: string; url: string; type?: string }>;
   mapLocations?: Array<{ name: string; lat: number; lng: number }>;
+  date_went?: string | null;
+  rating?: number | null;
+  journal_entry?: string | null;
 }
 
 interface DateIdeaCardProps {
   idea: DateIdea;
   onSave?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onJournalUpdate?: (
+    id: string,
+    data: { date_went: Date | null; rating: number | null; journal_entry: string }
+  ) => void;
   isSaved?: boolean;
+  showJournal?: boolean;
 }
 
-export const DateIdeaCard = ({ idea, onSave, onDelete, isSaved = false }: DateIdeaCardProps) => {
+export const DateIdeaCard = ({ idea, onSave, onDelete, onJournalUpdate, isSaved = false, showJournal = false }: DateIdeaCardProps) => {
   const [saved, setSaved] = useState(isSaved);
+  const [journalModalOpen, setJournalModalOpen] = useState(false);
   const { toast } = useToast();
 
   // Reset saved state when idea changes
@@ -196,6 +207,55 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, isSaved = false }: DateId
         </div>
       )}
 
+      {showJournal && idea.date_went && (
+        <div className="space-y-3 p-4 bg-primary/5 rounded-lg border border-primary/10">
+          <div className="flex items-center justify-between">
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-primary" />
+              Journal Entry
+            </h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setJournalModalOpen(true)}
+              className="text-xs"
+            >
+              Edit
+            </Button>
+          </div>
+          
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-accent" />
+              <span className="font-medium">
+                {format(new Date(idea.date_went), "MMMM d, yyyy")}
+              </span>
+            </div>
+            
+            {idea.rating && (
+              <div className="flex items-center gap-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < idea.rating!
+                        ? "fill-primary text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {idea.journal_entry && (
+              <p className="text-muted-foreground leading-relaxed mt-2">
+                {idea.journal_entry}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2 pt-2">
         <Button onClick={handleSchedule} variant="secondary" className="flex-1">
           <Calendar className="mr-2" />
@@ -205,7 +265,27 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, isSaved = false }: DateId
           <Share2 className="mr-2" />
           Share
         </Button>
+        {showJournal && (
+          <Button onClick={() => setJournalModalOpen(true)} variant="outline" className="flex-1">
+            <BookOpen className="mr-2" />
+            {idea.date_went ? "Update" : "Add"} Journal
+          </Button>
+        )}
       </div>
+
+      {showJournal && onJournalUpdate && (
+        <JournalEntryModal
+          open={journalModalOpen}
+          onOpenChange={setJournalModalOpen}
+          onSave={(data) => onJournalUpdate(idea.id, data)}
+          initialData={{
+            date_went: idea.date_went ? new Date(idea.date_went) : null,
+            rating: idea.rating || null,
+            journal_entry: idea.journal_entry || "",
+          }}
+          dateTitle={idea.title}
+        />
+      )}
     </Card>
   );
 };

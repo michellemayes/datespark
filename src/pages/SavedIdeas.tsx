@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react";
 const SavedIdeas = () => {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
-  const { savedIdeas, loading, deleteIdea } = useSavedIdeas(user?.id);
+  const { savedIdeas, loading, deleteIdea, updateJournal } = useSavedIdeas(user?.id);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -78,9 +78,14 @@ const SavedIdeas = () => {
                   foodSpots: idea.food_spots,
                   venueLinks: idea.venue_links || [],
                   mapLocations: idea.map_locations || [],
+                  date_went: idea.date_went,
+                  rating: idea.rating,
+                  journal_entry: idea.journal_entry,
                 }}
                 onDelete={deleteIdea}
+                onJournalUpdate={updateJournal}
                 isSaved={true}
+                showJournal={true}
               />
             ))}
           </div>
