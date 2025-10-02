@@ -58,7 +58,7 @@ serve(async (req) => {
 
     // Adjust number of ideas based on available venues
     const maxPossibleIdeas = Math.floor(venues.length / numActivities);
-    const numIdeas = Math.min(4, Math.max(1, maxPossibleIdeas));
+    const numIdeas = Math.min(6, Math.max(1, maxPossibleIdeas));
     
     console.log(`Available venues: ${venues.length}, Activities per idea: ${numActivities}, Max possible ideas: ${maxPossibleIdeas}, Generating: ${numIdeas} ideas`);
 

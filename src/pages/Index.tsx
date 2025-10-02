@@ -189,7 +189,7 @@ const Index = () => {
       const filteredPlaces = filterByDuration(allPlaces);
       console.log(`Duration: ${preferences.duration}, Filtered to ${filteredPlaces.length} appropriate venues from ${allPlaces.length} total`);
 
-      // Let AI create 4 unique date ideas
+      // Let AI create 6 unique date ideas
       const { data: aiResult, error: aiError } = await supabase.functions.invoke('filter-venues', {
         body: { 
           venues: filteredPlaces,
