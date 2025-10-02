@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MapPin, Clock, DollarSign, Calendar, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { scheduleDate } from "@/lib/calendar";
 
 export interface DateIdea {
   id: string;
@@ -36,10 +37,19 @@ export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProp
   };
 
   const handleSchedule = () => {
-    toast({
-      title: "Coming soon!",
-      description: "Google Calendar integration will be available soon",
-    });
+    try {
+      scheduleDate(idea);
+      toast({
+        title: "Opening Google Calendar",
+        description: "Add this date to your calendar!",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to open calendar. Please try again.",
+      });
+    }
   };
 
   const handleShare = () => {
