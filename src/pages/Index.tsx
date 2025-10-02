@@ -74,84 +74,76 @@ const Index = () => {
         }
       }
 
-      // Search for restaurants using Google Places
-      const radiusMeters = preferences.radiusMiles * 1609.34; // Convert miles to meters
-      const { data: placesData, error: placesError } = await supabase.functions.invoke('search-places', {
-        body: {
-          location: coordinates,
-          radius: radiusMeters,
-          type: 'restaurant',
-          budget: preferences.budget
+      // Search for multiple types of venues for variety
+      const venueTypes = ['restaurant', 'cafe', 'bar', 'museum', 'park', 'art_gallery'];
+      const radiusMeters = preferences.radiusMiles * 1609.34;
+      
+      const searchPromises = venueTypes.map(type =>
+        supabase.functions.invoke('search-places', {
+          body: {
+            location: coordinates,
+            radius: radiusMeters,
+            type: type,
+            budget: preferences.budget
+          }
+        })
+      );
+
+      const searchResults = await Promise.all(searchPromises);
+      
+      // Combine all results and shuffle for variety
+      let allPlaces: any[] = [];
+      searchResults.forEach(result => {
+        if (result.data?.places) {
+          allPlaces = [...allPlaces, ...result.data.places];
         }
       });
 
-      if (placesError) {
-        console.error('Places search error:', placesError);
-        throw placesError;
-      }
+      // Shuffle to randomize
+      allPlaces = allPlaces.sort(() => Math.random() - 0.5);
+      
+      console.log(`Found ${allPlaces.length} total venues`);
 
-      // Generate date ideas using real venue data
-      const places = placesData?.places || [];
       const ideas: DateIdea[] = [];
+      const ideasToGenerate = Math.min(4, Math.floor(allPlaces.length / 2));
 
-      if (places.length >= 2) {
-        // Create a romantic dinner date
-        const venue1Links = [];
-        if (places[0].details?.website) {
-          venue1Links.push({ name: places[0].name, url: places[0].details.website, type: 'website' });
-        }
-        if (places[1]?.details?.website) {
-          venue1Links.push({ name: places[1].name, url: places[1].details.website, type: 'website' });
-        }
+      // Generate varied date ideas
+      for (let i = 0; i < ideasToGenerate && allPlaces.length >= 2; i++) {
+        const startIdx = i * 2;
+        const venuesForIdea = allPlaces.slice(startIdx, startIdx + 3);
+        
+        if (venuesForIdea.length >= 2) {
+          const venueLinks = venuesForIdea
+            .filter(v => v.details?.website)
+            .map(v => ({ name: v.name, url: v.details.website, type: 'website' }));
 
-        ideas.push({
-          id: "1",
-          title: `Romantic Dinner at ${places[0].name}`,
-          description: `Enjoy a memorable evening with dinner at ${places[0].name}, rated ${places[0].rating || 'highly'} by diners`,
-          budget: preferences.budget === 0 ? "Free" : `$${preferences.budget}`,
-          duration: preferences.duration,
-          dressCode: preferences.dressCode,
-          location: preferences.location,
-          activities: [
-            `Arrive at ${places[0].name}`,
-            `Address: ${places[0].address}`,
-            `Rating: ${places[0].rating ? `${places[0].rating} ⭐` : 'Popular local spot'}`,
-            preferences.location === "mixed" ? "Take an evening walk nearby after dinner" : "Enjoy the ambiance",
-          ],
-          foodSpots: [
-            `${places[0].name} - ${places[0].address}`,
-            places[1] ? `Alternative: ${places[1].name} - ${places[1].address}` : undefined,
-          ].filter(Boolean) as string[],
-          venueLinks: venue1Links,
-        });
+          const mapLocations = venuesForIdea.map(v => ({
+            name: v.name,
+            lat: v.geometry.location.lat,
+            lng: v.geometry.location.lng
+          }));
+
+          ideas.push({
+            id: `idea-${i}`,
+            title: `${venuesForIdea[0].name} & More`,
+            description: venuesForIdea[2] 
+              ? `Start at ${venuesForIdea[0].name}, then ${venuesForIdea[1].name}, and finish at ${venuesForIdea[2].name}`
+              : `Begin your evening at ${venuesForIdea[0].name} followed by ${venuesForIdea[1].name}`,
+            budget: preferences.budget === 0 ? "Free" : `$${preferences.budget}`,
+            duration: preferences.duration,
+            dressCode: preferences.dressCode,
+            location: preferences.location,
+            activities: venuesForIdea.map(v => `${v.name} - ${v.address}`),
+            foodSpots: venuesForIdea
+              .filter(v => v.types?.includes('restaurant') || v.types?.includes('cafe') || v.types?.includes('bar'))
+              .map(v => v.name),
+            venueLinks,
+            mapLocations
+          });
+        }
       }
 
-      if (places.length >= 3) {
-        // Create a progressive dinner date
-        const venue2Links = places.slice(0, 3)
-          .filter(p => p.details?.website)
-          .map(p => ({ name: p.name, url: p.details.website, type: 'website' }));
-
-        ideas.push({
-          id: "2",
-          title: "Progressive Dining Experience",
-          description: "Explore multiple venues in one evening - appetizers at one spot, dinner at another",
-          budget: preferences.budget === 0 ? "Free" : `$${Math.floor(preferences.budget * 1.2)}`,
-          duration: preferences.duration,
-          dressCode: preferences.dressCode,
-          location: "mixed",
-          activities: [
-            `Start with drinks at ${places[1].name}`,
-            `Main course at ${places[0].name}`,
-            places[2] ? `Dessert at ${places[2].name}` : "Find a dessert spot along the way",
-            "Create a mini food tour experience together",
-          ],
-          foodSpots: places.slice(0, 3).map(p => `${p.name} - ${p.address}`),
-          venueLinks: venue2Links,
-        });
-      }
-
-      // Add a backup idea if we don't have enough places
+      // Add backup ideas if needed
       if (ideas.length === 0) {
         ideas.push({
           id: "fallback",
@@ -167,7 +159,7 @@ const Index = () => {
             "Discover a new neighborhood together",
             "End with coffee or dessert at a local café",
           ],
-          foodSpots: ["Ask locals for recommendations", "Use Google Maps to find nearby spots"],
+          foodSpots: ["Ask locals for recommendations"],
         });
       }
 
@@ -342,7 +334,7 @@ const Index = () => {
               ) : (
                 <>
                   <Sparkles className="mr-2" />
-                  Generate Date Ideas
+                  {generatedIdeas.length > 0 ? "Refresh Ideas" : "Generate Date Ideas"}
                 </>
               )}
             </Button>
