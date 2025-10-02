@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DateFilters, DatePreferences } from "@/components/DateFilters";
 import { DateIdeaCard, DateIdea } from "@/components/DateIdeaCard";
-import { Heart, Sparkles, Calendar, LogOut } from "lucide-react";
+import { Heart, Sparkles, Calendar, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSavedIdeas } from "@/hooks/useSavedIdeas";
@@ -25,6 +25,7 @@ const Index = () => {
   });
   const [generatedIdeas, setGeneratedIdeas] = useState<DateIdea[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [currentIdeaIndex, setCurrentIdeaIndex] = useState(0);
   const { savedIdeas, saveIdea, refetch } = useSavedIdeas(user?.id);
 
   useEffect(() => {
@@ -273,6 +274,7 @@ const Index = () => {
       }
 
       setGeneratedIdeas(ideas);
+      setCurrentIdeaIndex(0); // Reset to first idea
       
       toast({
         title: "Date ideas generated!",
@@ -505,14 +507,37 @@ const Index = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                {generatedIdeas.map((idea) => (
-                  <DateIdeaCard 
-                    key={idea.id} 
-                    idea={idea} 
-                    onSave={handleSaveIdea}
-                    isSaved={savedIdeas.some(saved => saved.title === idea.title)} 
-                  />
-                ))}
+                <div className="flex items-center justify-between mb-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentIdeaIndex(Math.max(0, currentIdeaIndex - 1))}
+                    disabled={currentIdeaIndex === 0}
+                    className="h-12 w-12"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <div className="text-center">
+                    <span className="text-sm font-semibold text-muted-foreground">
+                      {currentIdeaIndex + 1} of {generatedIdeas.length}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentIdeaIndex(Math.min(generatedIdeas.length - 1, currentIdeaIndex + 1))}
+                    disabled={currentIdeaIndex === generatedIdeas.length - 1}
+                    className="h-12 w-12"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </div>
+                <DateIdeaCard 
+                  key={generatedIdeas[currentIdeaIndex].id} 
+                  idea={generatedIdeas[currentIdeaIndex]} 
+                  onSave={handleSaveIdea}
+                  isSaved={savedIdeas.some(saved => saved.title === generatedIdeas[currentIdeaIndex].title)} 
+                />
               </div>
             )}
           </div>
