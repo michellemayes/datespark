@@ -56,10 +56,33 @@ export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProp
   };
 
   const handleShare = () => {
-    toast({
-      title: "Coming soon!",
-      description: "Share functionality will be available soon",
-    });
+    const shareText = `${idea.title}\n\n${idea.description}\n\nBudget: ${idea.budget} | Duration: ${idea.duration}\nDress Code: ${idea.dressCode}\n\nActivities:\n${idea.activities.join('\n')}`;
+    
+    // Try Web Share API first (mobile/supported browsers)
+    if (navigator.share) {
+      navigator.share({
+        title: idea.title,
+        text: shareText,
+      }).catch((error) => {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error);
+        }
+      });
+    } else {
+      // Fallback to clipboard
+      navigator.clipboard.writeText(shareText).then(() => {
+        toast({
+          title: "Copied to clipboard!",
+          description: "Date idea details copied. Share it anywhere!",
+        });
+      }).catch(() => {
+        toast({
+          variant: "destructive",
+          title: "Could not copy",
+          description: "Please try again",
+        });
+      });
+    }
   };
 
   return (
