@@ -70,7 +70,10 @@ Return ONLY a JSON object with this exact structure:
     }
 
     const aiData = await response.json();
-    const content = aiData.choices[0].message.content;
+    let content = aiData.choices[0].message.content;
+    
+    // Strip markdown code blocks if present
+    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     // Parse the JSON response
     let result;
