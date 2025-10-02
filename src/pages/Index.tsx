@@ -110,18 +110,20 @@ const Index = () => {
       // Generate varied date ideas
       for (let i = 0; i < ideasToGenerate && allPlaces.length >= 2; i++) {
         const startIdx = i * 2;
-        const venuesForIdea = allPlaces.slice(startIdx, startIdx + 3);
+        const venuesForIdea = allPlaces.slice(startIdx, startIdx + 3).filter(v => v.geometry?.location);
         
         if (venuesForIdea.length >= 2) {
           const venueLinks = venuesForIdea
             .filter(v => v.details?.website)
             .map(v => ({ name: v.name, url: v.details.website, type: 'website' }));
 
-          const mapLocations = venuesForIdea.map(v => ({
-            name: v.name,
-            lat: v.geometry.location.lat,
-            lng: v.geometry.location.lng
-          }));
+          const mapLocations = venuesForIdea
+            .filter(v => v.geometry?.location)
+            .map(v => ({
+              name: v.name,
+              lat: v.geometry.location.lat,
+              lng: v.geometry.location.lng
+            }));
 
           ideas.push({
             id: `idea-${i}`,
