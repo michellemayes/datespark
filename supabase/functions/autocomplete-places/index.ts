@@ -23,7 +23,7 @@ serve(async (req) => {
 
     const autocompleteUrl = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json');
     autocompleteUrl.searchParams.append('input', input);
-    autocompleteUrl.searchParams.append('types', '(cities)');
+    autocompleteUrl.searchParams.append('types', 'geocode');
     autocompleteUrl.searchParams.append('key', apiKey);
 
     const response = await fetch(autocompleteUrl.toString());
