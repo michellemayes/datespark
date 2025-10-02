@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt } from "lucide-react";
@@ -29,6 +29,11 @@ interface DateIdeaCardProps {
 export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProps) => {
   const [saved, setSaved] = useState(isSaved);
   const { toast } = useToast();
+
+  // Reset saved state when idea changes
+  useEffect(() => {
+    setSaved(isSaved);
+  }, [idea.id, isSaved]);
 
   const handleSave = () => {
     setSaved(!saved);
