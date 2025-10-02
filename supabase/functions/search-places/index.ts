@@ -29,24 +29,30 @@ serve(async (req) => {
     searchUrl.searchParams.append('key', apiKey);
 
     // Add price level filter based on budget per person
+    // Google price levels: 0=Free, 1=$, 2=$$, 3=$$$, 4=$$$$
     if (budget) {
       let minPriceLevel = 0;
       let maxPriceLevel = 4;
       
       if (budget < 20) {
+        // Budget under $20: Only free and $ options
         minPriceLevel = 0;
-        maxPriceLevel = 1; // Inexpensive
+        maxPriceLevel = 1;
       } else if (budget < 40) {
-        minPriceLevel = 0;
-        maxPriceLevel = 2; // Moderate
-      } else if (budget < 75) {
+        // Budget $20-40: $ to $$ (exclude free, focus on affordable)
         minPriceLevel = 1;
-        maxPriceLevel = 3; // Expensive
-      } else {
+        maxPriceLevel = 2;
+      } else if (budget < 75) {
+        // Budget $40-75: $$ to $$$ (exclude cheap, mid-range to upscale)
         minPriceLevel = 2;
-        maxPriceLevel = 4; // Very Expensive
+        maxPriceLevel = 3;
+      } else {
+        // Budget $75+: $$$ to $$$$ (only upscale options)
+        minPriceLevel = 3;
+        maxPriceLevel = 4;
       }
       
+      console.log(`Budget $${budget} → Price levels ${minPriceLevel}-${maxPriceLevel}`);
       searchUrl.searchParams.append('minprice', minPriceLevel.toString());
       searchUrl.searchParams.append('maxprice', maxPriceLevel.toString());
     }

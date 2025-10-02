@@ -141,7 +141,10 @@ Return JSON (verify each venueIndices has ${numActivities} items):
         throw new Error("Invalid response structure");
       }
       
-      // Validate each date idea
+      // Track all used venues across ALL ideas to prevent duplicates
+      const allUsedVenues = new Set<number>();
+      
+      // Validate each date idea and check for duplicates
       result.dateIdeas = result.dateIdeas.filter((idea: any) => {
         if (!idea.venueIndices || !Array.isArray(idea.venueIndices) || idea.venueIndices.length === 0) {
           return false;
@@ -149,25 +152,40 @@ Return JSON (verify each venueIndices has ${numActivities} items):
         
         // Check all indices are valid
         const validIndices = idea.venueIndices.every((i: number) => i >= 0 && i < venues.length);
-        if (!validIndices) return false;
+        if (!validIndices) {
+          console.log(`Removing date idea with invalid indices: ${idea.venueIndices}`);
+          return false;
+        }
         
         // Check for duplicates within this single date idea
         const uniqueIndices = new Set(idea.venueIndices);
         if (uniqueIndices.size !== idea.venueIndices.length) {
-          console.log(`Removing date idea with duplicate venues: ${idea.venueIndices}`);
+          console.log(`Removing date idea with duplicate venues within idea: ${idea.venueIndices}`);
           return false;
         }
         
+        // Check if any venue was already used in a previous idea
+        for (const venueIdx of idea.venueIndices) {
+          if (allUsedVenues.has(venueIdx)) {
+            console.log(`Removing date idea - venue ${venueIdx} (${venues[venueIdx]?.name}) already used in another idea`);
+            return false;
+          }
+        }
+        
+        // If all checks pass, mark these venues as used
+        idea.venueIndices.forEach((idx: number) => allUsedVenues.add(idx));
         return true;
       });
+      
+      console.log(`After validation: ${result.dateIdeas.length} unique date ideas with no duplicate venues`);
       
     } catch (e) {
       console.error("Failed to parse AI response:", content);
       // Return simple fallback
       result = {
         dateIdeas: [
-          { venueIndices: [0, 1], theme: "Simple Date" },
-          { venueIndices: [2, 3], theme: "Casual Outing" }
+          { venueIndices: [0], theme: "Simple Date" },
+          { venueIndices: [1], theme: "Casual Outing" }
         ]
       };
     }
