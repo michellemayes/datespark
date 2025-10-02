@@ -135,13 +135,13 @@ const Index = () => {
             if (!types.some(t => eveningTypes.includes(t))) return false;
           }
           
-          // Afternoon - exclude bars/nightclubs, include lunch spots
-          if (preferences.duration === 'afternoon') {
+          // Half Day - exclude bars/nightclubs, include lunch spots
+          if (preferences.duration === 'half') {
             if (types.includes('night_club')) return false;
           }
           
-          // Quick/Morning - exclude bars/nightclubs
-          if (preferences.duration === 'quick' || preferences.duration === 'morning') {
+          // Quick - exclude bars/nightclubs
+          if (preferences.duration === 'quick') {
             if (types.includes('bar') || types.includes('night_club')) return false;
           }
           
