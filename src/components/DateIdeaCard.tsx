@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt, Trash2, BookOpen, Star } from "lucide-react";
+import { Heart, MapPin, Clock, DollarSign, Calendar, Share2, Shirt, Trash2, Star as StarIcon, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
 import GoogleMap from "./GoogleMap";
-import { JournalEntryModal } from "./JournalEntryModal";
+import { ReviewModal } from "./ReviewModal";
 import { format } from "date-fns";
 
 export interface DateIdea {
@@ -29,17 +29,17 @@ interface DateIdeaCardProps {
   idea: DateIdea;
   onSave?: (id: string) => void;
   onDelete?: (id: string) => void;
-  onJournalUpdate?: (
+  onReviewUpdate?: (
     id: string,
     data: { date_went: Date | null; rating: number | null; journal_entry: string }
   ) => void;
   isSaved?: boolean;
-  showJournal?: boolean;
+  showReview?: boolean;
 }
 
-export const DateIdeaCard = ({ idea, onSave, onDelete, onJournalUpdate, isSaved = false, showJournal = false }: DateIdeaCardProps) => {
+export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved = false, showReview = false }: DateIdeaCardProps) => {
   const [saved, setSaved] = useState(isSaved);
-  const [journalModalOpen, setJournalModalOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const { toast } = useToast();
 
   // Reset saved state when idea changes
@@ -207,17 +207,17 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onJournalUpdate, isSaved 
         </div>
       )}
 
-      {showJournal && idea.date_went && (
+      {showReview && idea.date_went && (
         <div className="space-y-3 p-4 bg-primary/5 rounded-lg border border-primary/10">
           <div className="flex items-center justify-between">
             <h4 className="font-semibold text-sm flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-primary" />
-              Journal Entry
+              <StarIcon className="w-4 h-4 text-primary" />
+              Review
             </h4>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setJournalModalOpen(true)}
+              onClick={() => setReviewModalOpen(true)}
               className="text-xs"
             >
               Edit
@@ -265,19 +265,19 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onJournalUpdate, isSaved 
           <Share2 className="mr-2" />
           Share
         </Button>
-        {showJournal && (
-          <Button onClick={() => setJournalModalOpen(true)} variant="outline" className="flex-1">
-            <BookOpen className="mr-2" />
-            {idea.date_went ? "Update" : "Add"} Journal
+        {showReview && (
+          <Button onClick={() => setReviewModalOpen(true)} variant="outline" className="flex-1">
+            <StarIcon className="mr-2" />
+            {idea.date_went ? "Update" : "Add"} Review
           </Button>
         )}
       </div>
 
-      {showJournal && onJournalUpdate && (
-        <JournalEntryModal
-          open={journalModalOpen}
-          onOpenChange={setJournalModalOpen}
-          onSave={(data) => onJournalUpdate(idea.id, data)}
+      {showReview && onReviewUpdate && (
+        <ReviewModal
+          open={reviewModalOpen}
+          onOpenChange={setReviewModalOpen}
+          onSave={(data) => onReviewUpdate(idea.id, data)}
           initialData={{
             date_went: idea.date_went ? new Date(idea.date_went) : null,
             rating: idea.rating || null,

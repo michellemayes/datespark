@@ -8,7 +8,7 @@ import { Star, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-interface JournalEntryModalProps {
+interface ReviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (data: { date_went: Date | null; rating: number | null; journal_entry: string }) => void;
@@ -20,25 +20,25 @@ interface JournalEntryModalProps {
   dateTitle: string;
 }
 
-export const JournalEntryModal = ({
+export const ReviewModal = ({
   open,
   onOpenChange,
   onSave,
   initialData,
   dateTitle,
-}: JournalEntryModalProps) => {
+}: ReviewModalProps) => {
   const [dateWent, setDateWent] = useState<Date | undefined>(
     initialData?.date_went ? new Date(initialData.date_went) : undefined
   );
   const [rating, setRating] = useState<number | null>(initialData?.rating || null);
-  const [journalEntry, setJournalEntry] = useState(initialData?.journal_entry || "");
+  const [review, setReview] = useState(initialData?.journal_entry || "");
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
 
   const handleSave = () => {
     onSave({
       date_went: dateWent || null,
       rating,
-      journal_entry: journalEntry,
+      journal_entry: review,
     });
     onOpenChange(false);
   };
@@ -49,7 +49,7 @@ export const JournalEntryModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Journal Entry: {dateTitle}</DialogTitle>
+          <DialogTitle>Review: {dateTitle}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
@@ -108,13 +108,13 @@ export const JournalEntryModal = ({
             </div>
           </div>
 
-          {/* Journal Entry */}
+          {/* Review */}
           <div className="space-y-2">
             <label className="text-sm font-medium">How did it go?</label>
             <Textarea
               placeholder="Share your experience, memorable moments, or any thoughts about the date..."
-              value={journalEntry}
-              onChange={(e) => setJournalEntry(e.target.value)}
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
               className="min-h-[150px] resize-none"
             />
           </div>
@@ -125,7 +125,7 @@ export const JournalEntryModal = ({
             Cancel
           </Button>
           <Button onClick={handleSave}>
-            Save Journal Entry
+            Save Review
           </Button>
         </div>
       </DialogContent>

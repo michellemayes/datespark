@@ -128,9 +128,9 @@ export const useSavedIdeas = (userId: string | undefined) => {
     }
   };
 
-  const updateJournal = async (
+  const updateReview = async (
     ideaId: string,
-    journalData: {
+    reviewData: {
       date_went: Date | null;
       rating: number | null;
       journal_entry: string;
@@ -140,9 +140,9 @@ export const useSavedIdeas = (userId: string | undefined) => {
       const { error } = await supabase
         .from("saved_date_ideas")
         .update({
-          date_went: journalData.date_went?.toISOString() || null,
-          rating: journalData.rating,
-          journal_entry: journalData.journal_entry,
+          date_went: reviewData.date_went?.toISOString() || null,
+          rating: reviewData.rating,
+          journal_entry: reviewData.journal_entry,
         })
         .eq("id", ideaId);
 
@@ -150,7 +150,7 @@ export const useSavedIdeas = (userId: string | undefined) => {
 
       toast({
         title: "Success!",
-        description: "Journal entry saved",
+        description: "Review saved",
       });
 
       fetchSavedIdeas();
@@ -163,5 +163,5 @@ export const useSavedIdeas = (userId: string | undefined) => {
     }
   };
 
-  return { savedIdeas, loading, saveIdea, deleteIdea, updateJournal, refetch: fetchSavedIdeas };
+  return { savedIdeas, loading, saveIdea, deleteIdea, updateReview, refetch: fetchSavedIdeas };
 };
