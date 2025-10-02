@@ -65,10 +65,13 @@ serve(async (req) => {
           address: place.vicinity,
           rating: place.rating,
           priceLevel: place.price_level,
+          types: place.types,
           location: {
             lat: place.geometry.location.lat,
             lng: place.geometry.location.lng,
           },
+          geometry: place.geometry,
+          opening_hours: detailsData.result?.opening_hours,
           details: detailsData.result,
         };
       })

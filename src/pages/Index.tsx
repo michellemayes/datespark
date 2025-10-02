@@ -103,16 +103,37 @@ const Index = () => {
 
       // Apply logic-based filtering before AI
       const filterByDuration = (venues: any[]) => {
-        const hour = new Date().getHours();
         return venues.filter(v => {
           const types = v.types || [];
+          const name = v.name?.toLowerCase() || '';
           
-          // Evening (after 5pm) - no cafes/coffee shops
+          // Evening (after 5pm) - exclude ALL cafes, coffee shops, and breakfast places
           if (preferences.duration === 'evening') {
-            if (types.includes('cafe') || types.includes('coffee_shop')) return false;
+            // Type-based exclusions
+            if (types.includes('cafe') || 
+                types.includes('coffee_shop') || 
+                types.includes('bakery')) return false;
+            
+            // Name-based exclusions for common chains
+            const eveningExclusions = ['starbucks', 'coffee', 'cafe', 'dunkin', 'peet'];
+            if (eveningExclusions.some(term => name.includes(term))) return false;
+            
+            // Check opening hours if available
+            if (v.opening_hours?.periods) {
+              const now = new Date();
+              const eveningHour = 19; // 7 PM
+              const day = now.getDay();
+              
+              const todayHours = v.opening_hours.periods.find((p: any) => p.open?.day === day);
+              if (todayHours?.close) {
+                const closeHour = parseInt(todayHours.close.time.substring(0, 2));
+                // If closes before 7pm, exclude
+                if (closeHour < eveningHour) return false;
+              }
+            }
           }
           
-          // Morning (before noon) - no bars/nightclubs
+          // Morning/Quick - no bars/nightclubs
           if (preferences.duration === 'morning' || preferences.duration === 'quick') {
             if (types.includes('bar') || types.includes('night_club')) return false;
           }
