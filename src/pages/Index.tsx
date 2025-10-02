@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DateFilters, DatePreferences } from "@/components/DateFilters";
 import { DateIdeaCard, DateIdea } from "@/components/DateIdeaCard";
@@ -7,13 +6,14 @@ import { Heart, Sparkles, Calendar, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSavedIdeas } from "@/hooks/useSavedIdeas";
+import { AuthModal } from "@/components/AuthModal";
 import heroImage from "@/assets/hero-couple.jpg";
 
 const Index = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [preferences, setPreferences] = useState<DatePreferences>({
     budget: 50,
     duration: "evening",
@@ -236,7 +236,7 @@ const Index = () => {
         title: "Sign in required",
         description: "Please sign in to save date ideas",
       });
-      navigate("/auth");
+      setAuthModalOpen(true);
       return;
     }
 
@@ -262,6 +262,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
+      
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
@@ -273,7 +275,7 @@ const Index = () => {
                 Sign Out
               </Button>
             ) : (
-              <Button variant="ghost" onClick={() => navigate("/auth")}>
+              <Button variant="ghost" onClick={() => setAuthModalOpen(true)}>
                 Sign In
               </Button>
             )}
