@@ -266,7 +266,7 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
           Copy
         </Button>
         {showReview && (
-          <Button onClick={() => setReviewModalOpen(true)} variant="outline" className="flex-1">
+          <Button onClick={() => setReviewModalOpen(true)} variant="secondary" className="flex-1">
             <StarIcon className="mr-2" />
             {idea.date_went ? "Update" : "Add"} Review
           </Button>
