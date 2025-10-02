@@ -18,9 +18,9 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Calculate distance between two coordinates using Haversine formula
+    // Calculate distance between two coordinates
     const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-      const R = 3959; // Earth's radius in miles
+      const R = 3959; // miles
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -30,68 +30,63 @@ serve(async (req) => {
       return R * c;
     };
 
-    // Create detailed venue information with distances
+    // Determine activities count based on duration
+    let numActivities = 2;
+    if (preferences.duration === 'full-day') numActivities = 3;
+    else if (preferences.duration === 'evening') numActivities = 3;
+    else if (preferences.duration === 'quick') numActivities = 1;
+
+    // Create venue info with categories
     const venueList = venues.map((v: any, i: number) => {
       const lat = v.geometry?.location?.lat;
       const lng = v.geometry?.location?.lng;
       const distance = lat && lng && userLocation 
         ? calculateDistance(userLocation.lat, userLocation.lng, lat, lng).toFixed(1)
-        : 'unknown';
+        : 'N/A';
       
-      return `${i}. ${v.name}
-   Type: ${v.types?.join(', ') || 'unknown'}
-   Distance: ${distance} miles
-   Rating: ${v.rating || 'N/A'}
-   Coordinates: ${lat},${lng}`;
-    }).join('\n\n');
+      const types = v.types || [];
+      let category = 'activity';
+      if (types.includes('restaurant')) category = 'restaurant';
+      else if (types.includes('cafe')) category = 'cafe';
+      else if (types.includes('bar')) category = 'bar';
+      
+      return `${i}. ${v.name} [${category}] - ${distance}mi away - Rating: ${v.rating || 'N/A'} - Types: ${types.slice(0, 3).join(', ')}`;
+    }).join('\n');
 
-    // Determine number of activities based on duration
-    let numActivities = 2;
-    if (preferences.duration === 'full-day' || preferences.duration === 'evening') {
-      numActivities = 3;
-    } else if (preferences.duration === 'quick') {
-      numActivities = 1;
-    }
+    const prompt = `Create 4 diverse date ideas using these venues.
 
-    const prompt = `You are a date planning expert. Create ${numActivities === 1 ? '3-4' : '4'} unique date ideas using these venues.
-
-USER PREFERENCES:
+PREFERENCES:
 - Duration: ${preferences.duration}
-- Budget: $${preferences.budget} per person
-- Dress code: ${preferences.dressCode}
-- Dietary restrictions: ${preferences.dietaryRestrictions?.join(', ') || 'none'}
-- Location: ${preferences.location}
+- Budget: $${preferences.budget}
+- Dress Code: ${preferences.dressCode}
+- Dietary: ${preferences.dietaryRestrictions?.join(', ') || 'none'}
 
-AVAILABLE VENUES:
+VENUES (${venues.length} available):
 ${venueList}
 
-CRITICAL RULES:
-1. Each date idea needs exactly ${numActivities} activities
-2. Activities in the same date MUST be within 5 miles of each other
-3. NEVER use the same venue in multiple date ideas
-4. Pick venues that create a cohesive theme/experience
-5. Consider timing (${preferences.duration}):
-   - quick: 1-2 hours, simple activities
-   - afternoon: 3-4 hours, lunch + activity
-   - evening: 4-5 hours, dinner + entertainment
-   - full-day: 6+ hours, multiple activities with variety
+RULES:
+1. Each idea has exactly ${numActivities} activities
+2. Activities must be within 5 miles of each other
+3. NO venue used twice across all ideas
+4. MAX 1 restaurant per date idea
+5. Pick variety of categories (don't do 4 identical dates)
+6. Consider flow: ${preferences.duration === 'evening' ? 'dinner → activity' : preferences.duration === 'afternoon' ? 'lunch → activity' : preferences.duration === 'full-day' ? 'activity → lunch → activity' : 'simple activity'}
 
-Return a JSON object with this structure:
+Return JSON:
 {
   "dateIdeas": [
     {
-      "venueIndices": [1, 5, 12],
-      "theme": "Romantic Evening Out"
+      "venueIndices": [0, 15],
+      "theme": "Cultural Evening"
+    },
+    {
+      "venueIndices": [3, 8],
+      "theme": "Casual Fun"
     }
   ]
 }
 
-Pick venues that:
-- Match the budget and dress code
-- Are geographically close (within 5 miles)
-- Create a natural flow (e.g., coffee → museum → dinner)
-- Fit the time of day and duration
-- Offer variety across the ${numActivities === 1 ? '3-4' : '4'} different date ideas`;
+Make each date feel different. Prioritize highly-rated venues close together.`;
 
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

@@ -55,7 +55,7 @@ const Index = () => {
     
     try {
       // First, geocode the user's location
-      let coordinates = "37.7749,-122.4194"; // Default to SF
+      let coordinates = "37.7749,-122.4194";
       let userCoords = { lat: 37.7749, lng: -122.4194 };
       
       if (preferences.userLocation) {
@@ -76,9 +76,9 @@ const Index = () => {
         }
       }
 
-      // Search for multiple types of venues for variety
-      const venueTypes = ['restaurant', 'cafe', 'bar', 'museum', 'park', 'art_gallery'];
+      // Do broader search to get many options
       const radiusMeters = preferences.radiusMiles * 1609.34;
+      const venueTypes = ['restaurant', 'cafe', 'bar', 'museum', 'art_gallery', 'park', 'movie_theater', 'bowling_alley', 'night_club'];
       
       const searchPromises = venueTypes.map(type =>
         supabase.functions.invoke('search-places', {
@@ -92,8 +92,6 @@ const Index = () => {
       );
 
       const searchResults = await Promise.all(searchPromises);
-      
-      // Combine all results
       let allPlaces: any[] = [];
       searchResults.forEach(result => {
         if (result.data?.places) {
@@ -101,83 +99,93 @@ const Index = () => {
         }
       });
 
-      console.log(`Found ${allPlaces.length} total venues before AI filtering`);
+      console.log(`Found ${allPlaces.length} venues total`);
 
-      // Use AI to generate complete date ideas with smart venue selection
-      const { data: filterData, error: filterError } = await supabase.functions.invoke('filter-venues', {
+      // Apply logic-based filtering before AI
+      const filterByDuration = (venues: any[]) => {
+        const hour = new Date().getHours();
+        return venues.filter(v => {
+          const types = v.types || [];
+          
+          // Evening (after 5pm) - no cafes/coffee shops
+          if (preferences.duration === 'evening') {
+            if (types.includes('cafe') || types.includes('coffee_shop')) return false;
+          }
+          
+          // Morning (before noon) - no bars/nightclubs
+          if (preferences.duration === 'morning' || preferences.duration === 'quick') {
+            if (types.includes('bar') || types.includes('night_club')) return false;
+          }
+          
+          return true;
+        });
+      };
+
+      const filteredPlaces = filterByDuration(allPlaces);
+      console.log(`Filtered to ${filteredPlaces.length} duration-appropriate venues`);
+
+      // Let AI create 4 unique date ideas
+      const { data: aiResult, error: aiError } = await supabase.functions.invoke('filter-venues', {
         body: { 
-          venues: allPlaces,
+          venues: filteredPlaces,
           userLocation: userCoords,
           preferences: {
             duration: preferences.duration,
             budget: preferences.budget,
             dressCode: preferences.dressCode,
-            location: preferences.location,
             dietaryRestrictions: preferences.dietary
           }
         }
       });
 
-      const ideas: DateIdea[] = [];
-
-      if (filterError || !filterData?.dateIdeas) {
-        console.error('AI filtering error:', filterError);
+      if (aiError || !aiResult?.dateIdeas) {
+        console.error('AI error:', aiError);
         toast({
           variant: "destructive",
           title: "Error generating ideas",
-          description: "Please try again with different preferences",
+          description: "Please try again",
         });
         return;
       }
 
-      console.log(`AI generated ${filterData.dateIdeas.length} date ideas`);
+      console.log(`AI generated ${aiResult.dateIdeas.length} date ideas`);
 
-      // Generate content for each AI-selected date idea
-      const ideaPromises = filterData.dateIdeas.map(async (dateIdea: any, i: number) => {
-        const venuesForIdea = dateIdea.venueIndices.map((idx: number) => allPlaces[idx]).filter(Boolean);
+      // Generate content for each date idea
+      const ideas: DateIdea[] = [];
+      const ideaPromises = aiResult.dateIdeas.map(async (dateIdea: any, i: number) => {
+        const venues = dateIdea.venueIndices.map((idx: number) => filteredPlaces[idx]).filter(Boolean);
         
-        if (venuesForIdea.length === 0) return null;
+        if (venues.length === 0) return null;
 
-        const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-date-content', {
-          body: { venues: venuesForIdea }
+        const { data: contentData } = await supabase.functions.invoke('generate-date-content', {
+          body: { venues }
         });
 
-        if (contentError) {
-          console.error('Error generating content:', contentError);
-          return null;
-        }
-
-        const venueLinks = venuesForIdea
+        const venueLinks = venues
           .filter(v => v.details?.website)
           .map(v => ({ name: v.name, url: v.details.website, type: 'website' }));
 
-        const mapLocations = venuesForIdea
+        const mapLocations = venues
           .filter(v => v.location)
-          .map(v => ({
-            name: v.name,
-            lat: v.location.lat,
-            lng: v.location.lng
-          }));
+          .map(v => ({ name: v.name, lat: v.location.lat, lng: v.location.lng }));
 
         return {
           id: `idea-${i}`,
-          title: contentData?.title || dateIdea.theme || `${venuesForIdea[0].name} & More`,
-          description: contentData?.description || `Visit ${venuesForIdea.map(v => v.name).join(', ')}`,
+          title: contentData?.title || dateIdea.theme || `${venues[0].name} & More`,
+          description: contentData?.description || `Visit ${venues.map(v => v.name).join(', ')}`,
           budget: preferences.budget === 0 ? "Free" : `$${preferences.budget}`,
           duration: preferences.duration,
           dressCode: preferences.dressCode,
           location: preferences.location,
-          activities: venuesForIdea.map(v => `${v.name} - ${v.address}`),
-          foodSpots: venuesForIdea
-            .filter(v => v.types?.includes('restaurant') || v.types?.includes('cafe') || v.types?.includes('bar'))
-            .map(v => v.name),
+          activities: venues.map(v => `${v.name} - ${v.address}`),
+          foodSpots: venues.filter(v => v.types?.includes('restaurant') || v.types?.includes('cafe') || v.types?.includes('bar')).map(v => v.name),
           venueLinks,
           mapLocations
         };
       });
 
-      const generatedIdeasResults = await Promise.all(ideaPromises);
-      ideas.push(...generatedIdeasResults.filter(idea => idea !== null) as DateIdea[]);
+      const results = await Promise.all(ideaPromises);
+      ideas.push(...results.filter(idea => idea !== null) as DateIdea[]);
 
       // Add backup ideas if needed
       if (ideas.length === 0) {
