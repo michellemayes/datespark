@@ -38,8 +38,8 @@ Return a JSON array of venue indices (0-based) that are appropriate for this dat
 - Budget appropriateness
 - Variety (mix of activities)
 
-Return ONLY a JSON array like: [0, 2, 5, 7, 9]
-Pick 6-12 venues maximum that create a well-rounded date experience.`;
+Return ONLY a JSON array like: [0, 2, 5, 7, 9, 11, 14, 16]
+Pick 10-15 venues that create a well-rounded variety of date experiences.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

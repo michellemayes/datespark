@@ -137,14 +137,57 @@ const Index = () => {
       console.log(`Found ${allPlaces.length} total venues`);
 
       const ideas: DateIdea[] = [];
-      const ideasToGenerate = Math.min(4, Math.floor(allPlaces.length / 2));
+      const ideasToGenerate = Math.min(4, Math.floor(allPlaces.length / 3));
+
+      // Separate venues by type for better variety
+      const restaurants = allPlaces.filter(p => p.types?.includes('restaurant'));
+      const cafes = allPlaces.filter(p => p.types?.includes('cafe'));
+      const bars = allPlaces.filter(p => p.types?.includes('bar') && !p.types?.includes('movie_theater'));
+      const activities = allPlaces.filter(p => 
+        p.types?.includes('museum') || 
+        p.types?.includes('park') || 
+        p.types?.includes('art_gallery') ||
+        p.types?.includes('movie_theater')
+      );
+
+      console.log(`Venue breakdown: ${restaurants.length} restaurants, ${cafes.length} cafes, ${bars.length} bars, ${activities.length} activities`);
 
       // Generate varied date ideas with AI-powered titles and descriptions
       const ideaPromises = [];
       
-      for (let i = 0; i < ideasToGenerate && allPlaces.length >= 2; i++) {
-        const startIdx = i * 2;
-        const venuesForIdea = allPlaces.slice(startIdx, startIdx + 3).filter(v => v.location);
+      for (let i = 0; i < ideasToGenerate; i++) {
+        // Create varied combinations - mix different venue types
+        let venuesForIdea: any[] = [];
+        
+        // Strategy: Pick from different categories to ensure variety
+        const availableRestaurants = restaurants.filter(r => !venuesForIdea.find(v => v.id === r.id));
+        const availableBars = bars.filter(b => !venuesForIdea.find(v => v.id === b.id));
+        const availableActivities = activities.filter(a => !venuesForIdea.find(v => v.id === a.id));
+        const availableCafes = cafes.filter(c => !venuesForIdea.find(v => v.id === c.id));
+        
+        // Pick 2-3 venues from different types
+        if (availableRestaurants.length > i) {
+          venuesForIdea.push(availableRestaurants[i]);
+        }
+        
+        if (availableActivities.length > i) {
+          venuesForIdea.push(availableActivities[i]);
+        } else if (availableBars.length > i) {
+          venuesForIdea.push(availableBars[i]);
+        } else if (availableCafes.length > i) {
+          venuesForIdea.push(availableCafes[i]);
+        }
+        
+        // Add a third if available
+        if (venuesForIdea.length === 2) {
+          if (availableBars.length > i && !venuesForIdea.find(v => v.types?.includes('bar'))) {
+            venuesForIdea.push(availableBars[i]);
+          } else if (availableCafes.length > i && !venuesForIdea.find(v => v.types?.includes('cafe'))) {
+            venuesForIdea.push(availableCafes[i]);
+          }
+        }
+        
+        venuesForIdea = venuesForIdea.filter(v => v.location);
         
         if (venuesForIdea.length >= 2) {
           ideaPromises.push(
