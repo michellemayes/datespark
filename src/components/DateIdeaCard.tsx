@@ -137,17 +137,6 @@ export const DateIdeaCard = ({ idea, onSave, isSaved = false }: DateIdeaCardProp
         </div>
       )}
 
-      {idea.foodSpots && idea.foodSpots.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="font-semibold text-sm">Food Spots:</h4>
-          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-            {idea.foodSpots.map((spot, index) => (
-              <li key={index}>{spot}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {idea.venueLinks && idea.venueLinks.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-semibold text-sm">Venue Links:</h4>

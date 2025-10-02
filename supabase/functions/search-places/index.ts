@@ -28,13 +28,26 @@ serve(async (req) => {
     searchUrl.searchParams.append('type', type || 'restaurant');
     searchUrl.searchParams.append('key', apiKey);
 
-    // Add price level filter based on budget
+    // Add price level filter based on budget per person
     if (budget) {
+      let minPriceLevel = 0;
       let maxPriceLevel = 4;
-      if (budget < 30) maxPriceLevel = 1;
-      else if (budget < 60) maxPriceLevel = 2;
-      else if (budget < 100) maxPriceLevel = 3;
       
+      if (budget < 20) {
+        minPriceLevel = 0;
+        maxPriceLevel = 1; // Inexpensive
+      } else if (budget < 40) {
+        minPriceLevel = 0;
+        maxPriceLevel = 2; // Moderate
+      } else if (budget < 75) {
+        minPriceLevel = 1;
+        maxPriceLevel = 3; // Expensive
+      } else {
+        minPriceLevel = 2;
+        maxPriceLevel = 4; // Very Expensive
+      }
+      
+      searchUrl.searchParams.append('minprice', minPriceLevel.toString());
       searchUrl.searchParams.append('maxprice', maxPriceLevel.toString());
     }
 
