@@ -56,7 +56,13 @@ serve(async (req) => {
       return `${i}. ${v.name} [${category}] - ${distance}mi away - Rating: ${v.rating || 'N/A'} - Types: ${types.slice(0, 3).join(', ')}`;
     }).join('\n');
 
-    const prompt = `Create 4 diverse date ideas. Duration: "${preferences.duration}" requires EXACTLY ${numActivities} activities per idea.
+    // Adjust number of ideas based on available venues
+    const maxPossibleIdeas = Math.floor(venues.length / numActivities);
+    const numIdeas = Math.min(4, Math.max(1, maxPossibleIdeas));
+    
+    console.log(`Available venues: ${venues.length}, Activities per idea: ${numActivities}, Max possible ideas: ${maxPossibleIdeas}, Generating: ${numIdeas} ideas`);
+
+    const prompt = `Create ${numIdeas} diverse date ideas using ONLY the venues listed below. Duration: "${preferences.duration}" requires EXACTLY ${numActivities} activities per idea.
 
 PREFERENCES:
 - Duration: ${preferences.duration} → ${numActivities} activities required
@@ -64,10 +70,16 @@ PREFERENCES:
 - Dress Code: ${preferences.dressCode}
 - Dietary: ${preferences.dietaryRestrictions?.join(', ') || 'none'}
 
-VENUES (${venues.length} available):
+AVAILABLE VENUES (TOTAL: ${venues.length}):
 ${venueList}
 
-DURATION REQUIREMENTS - MUST FOLLOW:
+⚠️ CRITICAL INDEX RULES:
+- You have ${venues.length} venues numbered 0 to ${venues.length - 1}
+- ONLY use indices from 0 to ${venues.length - 1}
+- DO NOT use any index >= ${venues.length}
+- Each date needs exactly ${numActivities} different venues
+
+DURATION REQUIREMENTS:
 ${preferences.duration === 'quick' ? '- Quick (1-2 hours): Pick exactly ONE simple activity like a cafe, park, or museum visit' : ''}
 ${preferences.duration === 'half' ? '- Half Day (3-4 hours): Pick exactly THREE activities suitable for daytime (12pm-5pm). Include lunch spot + 2 activities like museums, parks, cafes, shopping' : ''}
 ${preferences.duration === 'evening' ? '- Evening (2-3 hours): Pick exactly TWO activities suitable for evening (6pm-10pm). Must include dinner OR drinks. NO cafes/coffee shops. Focus on restaurants, bars, theaters, entertainment' : ''}
@@ -75,19 +87,20 @@ ${preferences.duration === 'full' ? '- Full Day (5+ hours): Pick exactly FOUR TO
 
 CRITICAL RULES:
 1. Each date idea MUST have exactly ${numActivities} venues in venueIndices array
-2. Activities must be within 5 miles of each other
-3. NO venue used twice across all 4 ideas
+2. ONLY use indices 0 to ${venues.length - 1} (you have ${venues.length} venues)
+3. NO venue used twice across all ${numIdeas} ideas
 4. NEVER use the same venue twice within a single date idea
-5. MAX 1 restaurant per date idea
-6. Pick variety of categories (don't do 4 identical dates)
-7. MATCH VENUE TYPES TO TIME OF DAY - ${preferences.duration === 'evening' ? 'ONLY evening-appropriate venues (restaurants, bars, entertainment)' : preferences.duration === 'half' ? 'ONLY daytime-appropriate venues (lunch spots, museums, parks)' : 'time-appropriate venues'}
+5. Activities must be within 5 miles of each other
+6. MAX 1 restaurant per date idea
+7. Pick variety of categories (don't do identical dates)
+8. MATCH VENUE TYPES TO TIME OF DAY - ${preferences.duration === 'evening' ? 'ONLY evening-appropriate venues (restaurants, bars, entertainment)' : preferences.duration === 'half' ? 'ONLY daytime-appropriate venues (lunch spots, museums, parks)' : 'time-appropriate venues'}
 
-Return JSON (verify each venueIndices has ${numActivities} items):
+Return JSON with ${numIdeas} ideas (verify indices are 0-${venues.length - 1} and each has ${numActivities} items):
 {
   "dateIdeas": [
     {
-      "venueIndices": [0, 15],
-      "theme": "Cultural Evening"
+      "venueIndices": [0, 2],
+      "theme": "Example Theme"
     }
   ]
 }`;
