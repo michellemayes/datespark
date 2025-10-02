@@ -463,6 +463,8 @@ const Index = () => {
                   dressCode: idea.dress_code,
                   activities: idea.activities,
                   foodSpots: idea.food_spots,
+                  venueLinks: [],
+                  mapLocations: [],
                 }} 
                 isSaved={true}
               />
