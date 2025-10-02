@@ -57,9 +57,11 @@ export const scheduleDate = (idea: DateIdea): void => {
     ...idea.activities.map(a => `• ${a}`),
     '',
     ...(idea.foodSpots && idea.foodSpots.length > 0 
-      ? ['🍽️ Food & Drinks:', ...idea.foodSpots.map(f => `• ${f}`)] 
+      ? ['🍽️ Food & Drinks:', ...idea.foodSpots.map(f => `• ${f}`), ''] 
       : []),
-    '',
+    ...(idea.venueLinks && idea.venueLinks.length > 0 
+      ? ['🔗 Venue Links:', ...idea.venueLinks.map(v => `• ${v.name}: ${v.url}`), ''] 
+      : []),
     `💰 Budget: ${idea.budget}`,
     `👔 Dress Code: ${idea.dressCode}`,
   ].join('\n');
