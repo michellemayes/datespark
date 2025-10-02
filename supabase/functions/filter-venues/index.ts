@@ -11,35 +11,88 @@ serve(async (req) => {
   }
 
   try {
-    const { venues, preferences } = await req.json();
+    const { venues, preferences, userLocation } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Create context about the venues
-    const venueList = venues.map((v: any, i: number) => 
-      `${i + 1}. ${v.name} - Types: ${v.types?.join(', ') || 'unknown'}`
-    ).join('\n');
+    // Calculate distance between two coordinates using Haversine formula
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+      const R = 3959; // Earth's radius in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    };
 
-    const prompt = `You are helping filter venues for a date based on these preferences:
-- Time: ${preferences.duration} (e.g., "evening" = dinner/drinks, "afternoon" = lunch/coffee)
-- Budget: $${preferences.budget}
+    // Create detailed venue information with distances
+    const venueList = venues.map((v: any, i: number) => {
+      const lat = v.geometry?.location?.lat;
+      const lng = v.geometry?.location?.lng;
+      const distance = lat && lng && userLocation 
+        ? calculateDistance(userLocation.lat, userLocation.lng, lat, lng).toFixed(1)
+        : 'unknown';
+      
+      return `${i}. ${v.name}
+   Type: ${v.types?.join(', ') || 'unknown'}
+   Distance: ${distance} miles
+   Rating: ${v.rating || 'N/A'}
+   Coordinates: ${lat},${lng}`;
+    }).join('\n\n');
+
+    // Determine number of activities based on duration
+    let numActivities = 2;
+    if (preferences.duration === 'full-day' || preferences.duration === 'evening') {
+      numActivities = 3;
+    } else if (preferences.duration === 'quick') {
+      numActivities = 1;
+    }
+
+    const prompt = `You are a date planning expert. Create ${numActivities === 1 ? '3-4' : '4'} unique date ideas using these venues.
+
+USER PREFERENCES:
+- Duration: ${preferences.duration}
+- Budget: $${preferences.budget} per person
 - Dress code: ${preferences.dressCode}
+- Dietary restrictions: ${preferences.dietaryRestrictions?.join(', ') || 'none'}
+- Location: ${preferences.location}
 
-Venues available:
+AVAILABLE VENUES:
 ${venueList}
 
-Return a JSON array of venue indices (0-based) that are appropriate for this date. Consider:
-- Evening dates: prioritize restaurants, bars, theaters. Avoid coffee shops.
-- Afternoon dates: cafes, museums, parks, lunch spots are great
-- Morning dates: cafes, breakfast spots, parks
-- Budget appropriateness
-- Variety (mix of activities)
+CRITICAL RULES:
+1. Each date idea needs exactly ${numActivities} activities
+2. Activities in the same date MUST be within 5 miles of each other
+3. NEVER use the same venue in multiple date ideas
+4. Pick venues that create a cohesive theme/experience
+5. Consider timing (${preferences.duration}):
+   - quick: 1-2 hours, simple activities
+   - afternoon: 3-4 hours, lunch + activity
+   - evening: 4-5 hours, dinner + entertainment
+   - full-day: 6+ hours, multiple activities with variety
 
-Return ONLY a JSON array like: [0, 2, 5, 7, 9, 11, 14, 16]
-Pick 10-15 venues that create a well-rounded variety of date experiences.`;
+Return a JSON object with this structure:
+{
+  "dateIdeas": [
+    {
+      "venueIndices": [1, 5, 12],
+      "theme": "Romantic Evening Out"
+    }
+  ]
+}
+
+Pick venues that:
+- Match the budget and dress code
+- Are geographically close (within 5 miles)
+- Create a natural flow (e.g., coffee → museum → dinner)
+- Fit the time of day and duration
+- Offer variety across the ${numActivities === 1 ? '3-4' : '4'} different date ideas`;
+
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -50,7 +103,7 @@ Pick 10-15 venues that create a well-rounded variety of date experiences.`;
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are a date planning assistant. Always respond with valid JSON only." },
+          { role: "system", content: "You are an expert date planner. Always respond with valid JSON only." },
           { role: "user", content: prompt }
         ],
         temperature: 0.7,
@@ -61,9 +114,14 @@ Pick 10-15 venues that create a well-rounded variety of date experiences.`;
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
       
-      // Return all venues if AI fails
+      // Return simple fallback structure
       return new Response(
-        JSON.stringify({ indices: venues.map((_: any, i: number) => i) }),
+        JSON.stringify({ 
+          dateIdeas: [
+            { venueIndices: [0, 1], theme: "Simple Date" },
+            { venueIndices: [2, 3], theme: "Casual Outing" }
+          ]
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -75,26 +133,36 @@ Pick 10-15 venues that create a well-rounded variety of date experiences.`;
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     // Parse the JSON response
-    let indices;
+    let result;
     try {
-      indices = JSON.parse(content);
+      result = JSON.parse(content);
       
-      // Validate it's an array
-      if (!Array.isArray(indices)) {
-        throw new Error("Response is not an array");
+      // Validate it has the expected structure
+      if (!result.dateIdeas || !Array.isArray(result.dateIdeas)) {
+        throw new Error("Invalid response structure");
       }
       
-      // Filter out invalid indices
-      indices = indices.filter((i: number) => i >= 0 && i < venues.length);
+      // Validate each date idea
+      result.dateIdeas = result.dateIdeas.filter((idea: any) => 
+        idea.venueIndices && 
+        Array.isArray(idea.venueIndices) && 
+        idea.venueIndices.length > 0 &&
+        idea.venueIndices.every((i: number) => i >= 0 && i < venues.length)
+      );
       
     } catch (e) {
       console.error("Failed to parse AI response:", content);
-      // Return all venues as fallback
-      indices = venues.map((_: any, i: number) => i);
+      // Return simple fallback
+      result = {
+        dateIdeas: [
+          { venueIndices: [0, 1], theme: "Simple Date" },
+          { venueIndices: [2, 3], theme: "Casual Outing" }
+        ]
+      };
     }
 
     return new Response(
-      JSON.stringify({ indices }),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
