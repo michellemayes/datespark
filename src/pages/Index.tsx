@@ -433,7 +433,7 @@ const Index = () => {
             </div>
             <h3 className="text-xl font-bold">Personalized Ideas</h3>
             <p className="text-muted-foreground">
-              Filter by budget, time, and style to get dates that actually work for you
+              Filter by budget, duration, and venue type to get dates that work for you.
             </p>
           </div>
           <div className="text-center space-y-4 p-6 rounded-2xl bg-card border-2 border-border shadow-playful hover:shadow-glow transition-all animate-bounce-in" style={{ animationDelay: '0.1s' }}>
@@ -442,7 +442,7 @@ const Index = () => {
             </div>
             <h3 className="text-xl font-bold">One-Click Scheduling</h3>
             <p className="text-muted-foreground">
-              Add your date to Google Calendar and share the itinerary with your partner instantly
+              Add your date to Google Calendar and share the itinerary with your partner instantly.
             </p>
           </div>
           <div className="text-center space-y-4 p-6 rounded-2xl bg-card border-2 border-border shadow-playful hover:shadow-glow transition-all animate-bounce-in" style={{ animationDelay: '0.2s' }}>
@@ -451,7 +451,7 @@ const Index = () => {
             </div>
             <h3 className="text-xl font-bold">Save Your Favorites</h3>
             <p className="text-muted-foreground">
-              Build your date night bucket list and never run out of romantic ideas again
+              Build your date night bucket list and never run out of romantic ideas again!
             </p>
           </div>
         </div>
@@ -483,7 +483,7 @@ const Index = () => {
               {isGenerating ? (
                 <>
                   <Sparkles className="mr-2 animate-spin" />
-                  Generating Ideas...
+                  Generating Dates...
                 </>
               ) : (
                 <>
@@ -516,7 +516,7 @@ const Index = () => {
                 </div>
                 <h3 className="text-2xl font-bold">Ready to Find Your Perfect Date?</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  Adjust your preferences and click "Generate Date Ideas" to get started!
+                  Adjust your preferences and click "Generate Dates" to get started!
                 </p>
               </div>
             ) : (
