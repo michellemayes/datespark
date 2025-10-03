@@ -488,7 +488,7 @@ const Index = () => {
               ) : (
                 <>
                   <Sparkles className="mr-2" />
-                  {generatedIdeas.length > 0 ? "Refresh Ideas" : "Generate Date Ideas"}
+                  Generate Dates
                 </>
               )}
             </Button>
