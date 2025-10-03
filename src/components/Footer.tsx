@@ -12,7 +12,7 @@ export const Footer = () => {
           </div>
           
           <div className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Date Idea Generator. All rights reserved.
+            © {new Date().getFullYear()} DateSpark. All rights reserved.
           </div>
         </div>
       </div>
