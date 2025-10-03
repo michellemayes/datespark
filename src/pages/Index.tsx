@@ -362,11 +362,10 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
-        <div className="container mx-auto px-4 py-16 relative z-10">
-          <div className="flex justify-end gap-2 mb-4">
+      {/* Header */}
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-end items-center gap-2">
             {user && (
               <Button variant="ghost" onClick={() => window.location.href = '/saved'}>
                 <Heart className="mr-2 h-4 w-4" />
@@ -384,6 +383,13 @@ const Index = () => {
               </Button>
             )}
           </div>
+        </div>
+      </header>
+      
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
+        <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 animate-slide-up">
               <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
