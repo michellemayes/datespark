@@ -89,20 +89,41 @@ serve(async (req) => {
     // Extract temperature in Fahrenheit
     const maxTempC = dayForecast.maxTemperature?.degrees || 22;
     const minTempC = dayForecast.minTemperature?.degrees || 10;
-    const avgTempF = Math.round(((maxTempC + minTempC) / 2) * 9/5 + 32);
+    const maxTempF = Math.round(maxTempC * 9/5 + 32);
+    const minTempF = Math.round(minTempC * 9/5 + 32);
+    const avgTempF = Math.round((maxTempF + minTempF) / 2);
     
-    // Get condition from daytime forecast
-    const condition = dayForecast.daytimeForecast?.weatherCondition?.description?.text || 'Clear';
-    const conditionType = dayForecast.daytimeForecast?.weatherCondition?.type || 'CLEAR';
+    // Get daytime forecast
+    const daytimeForecast = {
+      temperature: maxTempF,
+      condition: dayForecast.daytimeForecast?.weatherCondition?.description?.text || 'Clear',
+      iconUrl: dayForecast.daytimeForecast?.weatherCondition?.iconBaseUri || '',
+      humidity: dayForecast.daytimeForecast?.relativeHumidity || 50,
+      windSpeed: Math.round(dayForecast.daytimeForecast?.wind?.speed?.value || 5),
+      precipitationProbability: dayForecast.daytimeForecast?.precipitation?.probability?.percent || 0
+    };
+    
+    // Get nighttime forecast
+    const nighttimeForecast = {
+      temperature: minTempF,
+      condition: dayForecast.nighttimeForecast?.weatherCondition?.description?.text || 'Clear',
+      iconUrl: dayForecast.nighttimeForecast?.weatherCondition?.iconBaseUri || '',
+      humidity: dayForecast.nighttimeForecast?.relativeHumidity || 50,
+      windSpeed: Math.round(dayForecast.nighttimeForecast?.wind?.speed?.value || 5),
+      precipitationProbability: dayForecast.nighttimeForecast?.precipitation?.probability?.percent || 0
+    };
     
     const weatherData = {
       temperature: avgTempF,
-      condition: conditionType.replace(/_/g, ' ').split(' ').map((w: string) => w.charAt(0) + w.slice(1).toLowerCase()).join(' '),
-      description: condition,
+      maxTemperature: maxTempF,
+      minTemperature: minTempF,
+      condition: daytimeForecast.condition,
+      description: daytimeForecast.condition,
       icon: '01d',
-      humidity: dayForecast.daytimeForecast?.relativeHumidity || 50,
-      windSpeed: Math.round(dayForecast.daytimeForecast?.wind?.speed?.value || 5),
-      hourlyForecast: [] // Google Weather API doesn't provide hourly in days endpoint
+      humidity: daytimeForecast.humidity,
+      windSpeed: daytimeForecast.windSpeed,
+      daytimeForecast,
+      nighttimeForecast
     };
 
     console.log('Weather data:', weatherData);

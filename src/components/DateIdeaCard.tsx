@@ -25,9 +25,27 @@ export interface DateIdea {
   journal_entry?: string | null;
   weather?: {
     temperature: number;
+    maxTemperature?: number;
+    minTemperature?: number;
     condition: string;
     description: string;
     icon: string;
+    daytimeForecast?: {
+      temperature: number;
+      condition: string;
+      iconUrl: string;
+      humidity: number;
+      windSpeed: number;
+      precipitationProbability: number;
+    };
+    nighttimeForecast?: {
+      temperature: number;
+      condition: string;
+      iconUrl: string;
+      humidity: number;
+      windSpeed: number;
+      precipitationProbability: number;
+    };
     hourlyForecast?: Array<{
       time: string;
       temperature: number;
@@ -214,58 +232,59 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
             <div className="flex items-center gap-2">
               <span className="text-3xl font-bold text-primary">{idea.weather.temperature}°F</span>
               <div className="text-sm">
-                <p className="font-semibold">{idea.weather.condition}</p>
-                <p className="text-muted-foreground capitalize">{idea.weather.description}</p>
+                <p className="text-muted-foreground">High: {idea.weather.maxTemperature}°F • Low: {idea.weather.minTemperature}°F</p>
               </div>
             </div>
           </div>
+          
+          {idea.weather.daytimeForecast && idea.weather.nighttimeForecast && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-background rounded-md p-4 border border-border">
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">Daytime</p>
+                  {idea.weather.daytimeForecast.iconUrl && (
+                    <img 
+                      src={`${idea.weather.daytimeForecast.iconUrl}.png`} 
+                      alt={idea.weather.daytimeForecast.condition}
+                      className="w-16 h-16"
+                    />
+                  )}
+                  <p className="text-2xl font-bold">{idea.weather.daytimeForecast.temperature}°F</p>
+                  <p className="text-xs text-center capitalize">{idea.weather.daytimeForecast.condition}</p>
+                  <div className="text-xs text-muted-foreground space-y-0.5 w-full">
+                    <p>💧 {idea.weather.daytimeForecast.precipitationProbability}% chance</p>
+                    <p>💨 {idea.weather.daytimeForecast.windSpeed} km/h</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-background rounded-md p-4 border border-border">
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">Nighttime</p>
+                  {idea.weather.nighttimeForecast.iconUrl && (
+                    <img 
+                      src={`${idea.weather.nighttimeForecast.iconUrl}.png`} 
+                      alt={idea.weather.nighttimeForecast.condition}
+                      className="w-16 h-16"
+                    />
+                  )}
+                  <p className="text-2xl font-bold">{idea.weather.nighttimeForecast.temperature}°F</p>
+                  <p className="text-xs text-center capitalize">{idea.weather.nighttimeForecast.condition}</p>
+                  <div className="text-xs text-muted-foreground space-y-0.5 w-full">
+                    <p>💧 {idea.weather.nighttimeForecast.precipitationProbability}% chance</p>
+                    <p>💨 {idea.weather.nighttimeForecast.windSpeed} km/h</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {idea.clothingRecommendation && (
             <div className="bg-background rounded-md p-3 border border-border">
               <p className="text-sm flex items-start gap-2">
                 <Shirt className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
                 <span><span className="font-semibold">What to wear:</span> {idea.clothingRecommendation}</span>
               </p>
-            </div>
-          )}
-          
-          {idea.weather?.hourlyForecast && idea.weather.hourlyForecast.length > 0 && (
-            <div className="bg-background rounded-md p-3 border border-border">
-              <div className="flex items-center justify-between mb-3">
-                <h5 className="text-sm font-semibold">Hourly Forecast</h5>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => setCurrentHourIndex(Math.max(0, currentHourIndex - 1))}
-                    disabled={currentHourIndex === 0}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => setCurrentHourIndex(Math.min(idea.weather!.hourlyForecast!.length - 1, currentHourIndex + 1))}
-                    disabled={currentHourIndex === idea.weather.hourlyForecast.length - 1}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="flex flex-col items-center py-2">
-                {(() => {
-                  const hour = idea.weather.hourlyForecast[currentHourIndex];
-                  return (
-                    <>
-                      <p className="text-xs text-muted-foreground mb-2">{hour.time}</p>
-                      <span className="text-5xl mb-2">{getWeatherEmoji(hour.condition)}</span>
-                      <p className="text-2xl font-semibold">{hour.temperature}°F</p>
-                      <p className="text-xs text-muted-foreground mt-1 capitalize">{hour.condition}</p>
-                    </>
-                  );
-                })()}
-              </div>
             </div>
           )}
         </div>
