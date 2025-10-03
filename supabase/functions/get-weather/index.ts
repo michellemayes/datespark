@@ -54,13 +54,18 @@ serve(async (req) => {
     
     console.log('Fetching weather for location:', lat, lng, 'on date:', date);
 
+    // Use at least 1 day for the API call
+    const daysParam = Math.max(1, diffDays);
+
     // Use Google Maps Weather API
-    const weatherUrl = `https://weather.googleapis.com/v1/forecast/days:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&days=${diffDays}`;
+    const weatherUrl = `https://weather.googleapis.com/v1/forecast/days:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&days=${daysParam}`;
 
     const response = await fetch(weatherUrl);
     
     if (!response.ok) {
       console.log('Weather API returned error:', response.status);
+      const errorText = await response.text();
+      console.log('Error response:', errorText);
       return new Response(
         JSON.stringify(null),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -69,7 +74,7 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    if (!data || !data.days || data.days.length === 0) {
+    if (!data || !data.forecastDays || data.forecastDays.length === 0) {
       console.log('No weather data available');
       return new Response(
         JSON.stringify(null),
@@ -77,22 +82,27 @@ serve(async (req) => {
       );
     }
 
-    // Get the weather for the target day
-    const dayForecast = data.days[0];
+    // Get the weather for the target day (find matching day by index)
+    const dayIndex = Math.min(diffDays, data.forecastDays.length - 1);
+    const dayForecast = data.forecastDays[dayIndex];
+    
+    // Extract temperature in Fahrenheit
+    const maxTempC = dayForecast.maxTemperature?.degrees || 22;
+    const minTempC = dayForecast.minTemperature?.degrees || 10;
+    const avgTempF = Math.round(((maxTempC + minTempC) / 2) * 9/5 + 32);
+    
+    // Get condition from daytime forecast
+    const condition = dayForecast.daytimeForecast?.weatherCondition?.description?.text || 'Clear';
+    const conditionType = dayForecast.daytimeForecast?.weatherCondition?.type || 'CLEAR';
     
     const weatherData = {
-      temperature: Math.round(dayForecast.temperature?.max?.value || dayForecast.temperature?.value || 72),
-      condition: dayForecast.condition || 'Clear',
-      description: dayForecast.description || 'Pleasant weather expected',
+      temperature: avgTempF,
+      condition: conditionType.replace(/_/g, ' ').split(' ').map((w: string) => w.charAt(0) + w.slice(1).toLowerCase()).join(' '),
+      description: condition,
       icon: '01d',
-      humidity: dayForecast.humidity || 50,
-      windSpeed: Math.round(dayForecast.wind?.speed || 5),
-      hourlyForecast: dayForecast.hourly?.slice(0, 8).map((hour: any) => ({
-        time: new Date(hour.time).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
-        temperature: Math.round(hour.temperature?.value || 72),
-        condition: hour.condition || 'Clear',
-        icon: '01d'
-      })) || []
+      humidity: dayForecast.daytimeForecast?.relativeHumidity || 50,
+      windSpeed: Math.round(dayForecast.daytimeForecast?.wind?.speed?.value || 5),
+      hourlyForecast: [] // Google Weather API doesn't provide hourly in days endpoint
     };
 
     console.log('Weather data:', weatherData);
