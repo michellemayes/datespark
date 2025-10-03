@@ -15,26 +15,6 @@ serve(async (req) => {
   try {
     const { lat, lng, date } = await req.json();
     
-    // Get API key from secrets
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-    
-    const { data: keyData, error: keyError } = await supabaseClient.functions.invoke('get-maps-key');
-    
-    if (keyError || !keyData?.key) {
-      console.error('Failed to get Google Maps API key');
-      return new Response(
-        JSON.stringify(null),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const apiKey = keyData.key;
-    
-    console.log('Fetching weather for location:', lat, lng, 'on date:', date);
-
     // Calculate days between today and target date
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -44,6 +24,35 @@ serve(async (req) => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     console.log('Days from today:', diffDays);
+
+    // Don't provide weather if date is more than 10 days in the future
+    if (diffDays > 10) {
+      console.log('Date is more than 10 days in the future, not providing weather');
+      return new Response(
+        JSON.stringify(null),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Get API key from secrets
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+    
+    const { data: keyData, error: keyError } = await supabaseClient.functions.invoke('get-maps-key');
+    
+    if (keyError || !keyData?.apiKey) {
+      console.error('Failed to get Google Maps API key:', keyError);
+      return new Response(
+        JSON.stringify(null),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const apiKey = keyData.apiKey;
+    
+    console.log('Fetching weather for location:', lat, lng, 'on date:', date);
 
     // Use Google Maps Weather API
     const weatherUrl = `https://weather.googleapis.com/v1/forecast/days:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&days=${diffDays}`;
