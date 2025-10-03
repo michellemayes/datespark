@@ -265,7 +265,7 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
                       )}
                       <p className="text-xl font-bold">{idea.weather.daytimeForecast.temperature}°F</p>
                       <p className="text-xs text-center capitalize">{idea.weather.daytimeForecast.condition}</p>
-                      <div className="text-xs text-muted-foreground space-y-0.5 w-full">
+                      <div className="text-xs text-muted-foreground space-y-0.5 w-full text-center">
                         <p>💧 {idea.weather.daytimeForecast.precipitationProbability}%</p>
                         <p>💨 {idea.weather.daytimeForecast.windSpeed} km/h</p>
                       </div>
@@ -284,7 +284,7 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
                       )}
                       <p className="text-xl font-bold">{idea.weather.nighttimeForecast.temperature}°F</p>
                       <p className="text-xs text-center capitalize">{idea.weather.nighttimeForecast.condition}</p>
-                      <div className="text-xs text-muted-foreground space-y-0.5 w-full">
+                      <div className="text-xs text-muted-foreground space-y-0.5 w-full text-center">
                         <p>💧 {idea.weather.nighttimeForecast.precipitationProbability}%</p>
                         <p>💨 {idea.weather.nighttimeForecast.windSpeed} km/h</p>
                       </div>
