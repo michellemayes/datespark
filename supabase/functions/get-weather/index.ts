@@ -24,79 +24,66 @@ serve(async (req) => {
     const { data: keyData, error: keyError } = await supabaseClient.functions.invoke('get-maps-key');
     
     if (keyError || !keyData?.key) {
-      throw new Error('Failed to get Google Maps API key');
+      console.error('Failed to get Google Maps API key');
+      return new Response(
+        JSON.stringify(null),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const apiKey = keyData.key;
     
     console.log('Fetching weather for location:', lat, lng, 'on date:', date);
 
-    // Use Google Places API with the "current_weather" field
-    // Note: Google doesn't have a direct weather forecast API, but Places API provides current weather
-    // For actual forecast, we'll use OpenWeather as a fallback
-    const weatherUrl = new URL('https://api.openweathermap.org/data/2.5/forecast');
-    weatherUrl.searchParams.append('lat', lat.toString());
-    weatherUrl.searchParams.append('lon', lng.toString());
-    weatherUrl.searchParams.append('appid', apiKey);
-    weatherUrl.searchParams.append('units', 'imperial');
+    // Calculate days between today and target date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    const diffTime = targetDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    const response = await fetch(weatherUrl.toString());
+    console.log('Days from today:', diffDays);
+
+    // Use Google Maps Weather API
+    const weatherUrl = `https://weather.googleapis.com/v1/forecast/days:lookup?key=${apiKey}&location.latitude=${lat}&location.longitude=${lng}&days=${diffDays}`;
+
+    const response = await fetch(weatherUrl);
     
     if (!response.ok) {
-      // If OpenWeather doesn't work with Google key, return a reasonable default
-      console.log('Weather API returned:', response.status);
+      console.log('Weather API returned error:', response.status);
       return new Response(
-        JSON.stringify({
-          temperature: 72,
-          condition: 'Clear',
-          description: 'Pleasant weather expected',
-          icon: '01d'
-        }),
+        JSON.stringify(null),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const data = await response.json();
     
-    // Find the forecast closest to the requested date
-    const targetDate = new Date(date);
-    const targetTime = targetDate.getTime();
-    
-    let closestForecast = data.list[0];
-    let minDiff = Math.abs(new Date(closestForecast.dt * 1000).getTime() - targetTime);
-    
-    for (const forecast of data.list) {
-      const forecastTime = new Date(forecast.dt * 1000).getTime();
-      const diff = Math.abs(forecastTime - targetTime);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestForecast = forecast;
-      }
+    if (!data || !data.days || data.days.length === 0) {
+      console.log('No weather data available');
+      return new Response(
+        JSON.stringify(null),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Get hourly forecast for the date (next 8 hours from the target time)
-    const hourlyForecast = data.list
-      .filter((forecast: any) => {
-        const forecastTime = new Date(forecast.dt * 1000);
-        const timeDiff = forecastTime.getTime() - targetTime;
-        return timeDiff >= 0 && timeDiff <= 8 * 60 * 60 * 1000; // Next 8 hours
-      })
-      .slice(0, 8)
-      .map((forecast: any) => ({
-        time: new Date(forecast.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
-        temperature: Math.round(forecast.main.temp),
-        condition: forecast.weather[0].main,
-        icon: forecast.weather[0].icon
-      }));
-
+    // Get the weather for the target day
+    const dayForecast = data.days[0];
+    
     const weatherData = {
-      temperature: Math.round(closestForecast.main.temp),
-      condition: closestForecast.weather[0].main,
-      description: closestForecast.weather[0].description,
-      icon: closestForecast.weather[0].icon,
-      humidity: closestForecast.main.humidity,
-      windSpeed: Math.round(closestForecast.wind.speed),
-      hourlyForecast
+      temperature: Math.round(dayForecast.temperature?.max?.value || dayForecast.temperature?.value || 72),
+      condition: dayForecast.condition || 'Clear',
+      description: dayForecast.description || 'Pleasant weather expected',
+      icon: '01d',
+      humidity: dayForecast.humidity || 50,
+      windSpeed: Math.round(dayForecast.wind?.speed || 5),
+      hourlyForecast: dayForecast.hourly?.slice(0, 8).map((hour: any) => ({
+        time: new Date(hour.time).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+        temperature: Math.round(hour.temperature?.value || 72),
+        condition: hour.condition || 'Clear',
+        icon: '01d'
+      })) || []
     };
 
     console.log('Weather data:', weatherData);
@@ -107,16 +94,10 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in get-weather function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     
-    // Return default weather on error
+    // Return null on error so card doesn't show weather
     return new Response(
-      JSON.stringify({
-        temperature: 72,
-        condition: 'Clear',
-        description: 'Pleasant weather expected',
-        icon: '01d'
-      }),
+      JSON.stringify(null),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
