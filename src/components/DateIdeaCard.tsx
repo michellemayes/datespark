@@ -246,7 +246,7 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
                     <img 
                       src={`${idea.weather.daytimeForecast.iconUrl}.png`} 
                       alt={idea.weather.daytimeForecast.condition}
-                      className="w-16 h-16"
+                      className="w-12 h-12"
                     />
                   )}
                   <p className="text-2xl font-bold">{idea.weather.daytimeForecast.temperature}°F</p>
@@ -265,7 +265,7 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
                     <img 
                       src={`${idea.weather.nighttimeForecast.iconUrl}.png`} 
                       alt={idea.weather.nighttimeForecast.condition}
-                      className="w-16 h-16"
+                      className="w-12 h-12"
                     />
                   )}
                   <p className="text-2xl font-bold">{idea.weather.nighttimeForecast.temperature}°F</p>

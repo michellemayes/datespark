@@ -20,15 +20,15 @@ serve(async (req) => {
     }
 
     const systemPrompt = `You are a fashion advisor helping people dress appropriately for their date. 
-Provide practical, specific clothing recommendations based on weather conditions and dress code.
-Keep recommendations concise (2-3 sentences max) and actionable.`;
+Provide general style guidance based on weather conditions and dress code, focusing on fabric types, layering needs, and comfort level.
+Avoid naming specific clothing items. Keep recommendations concise (2-3 sentences max) and actionable.`;
 
     const userPrompt = `Weather: ${weather.temperature}°F, ${weather.condition} (${weather.description})
 Wind: ${weather.windSpeed} mph, Humidity: ${weather.humidity}%
 Dress Code: ${dressCode}
 Location Type: ${location}
 
-What should they wear? Be specific and practical.`;
+What general style advice would you give? Focus on breathability, layering, comfort, and formality level without mentioning specific garments.`;
 
     console.log('Generating clothing recommendation for:', { weather, dressCode, location });
 
