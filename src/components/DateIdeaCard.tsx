@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, DollarSign, Calendar, Copy, Shirt, Trash2, Star as StarIcon, Star, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, MapPin, Clock, DollarSign, Calendar, Copy, Shirt, Trash2, Star as StarIcon, Star, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
 import GoogleMap from "./GoogleMap";
@@ -227,17 +227,15 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
         <div className="bg-muted/50 rounded-lg p-4 space-y-3 border border-border">
           <button 
             onClick={() => setWeatherExpanded(!weatherExpanded)}
-            className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
+            className="w-full flex items-center justify-between hover:bg-muted/30 transition-all duration-200 rounded-md p-2 -m-2"
           >
             <h4 className="font-semibold text-sm flex items-center gap-2">
               <span className="text-2xl">☀️</span>
               Weather Forecast
             </h4>
-            {weatherExpanded ? (
-              <ChevronUp className="w-5 h-5 text-muted-foreground" />
-            ) : (
+            <div className={`transition-transform duration-200 ${weatherExpanded ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-5 h-5 text-muted-foreground" />
-            )}
+            </div>
           </button>
           
           <div className="flex items-center gap-4">
@@ -249,8 +247,10 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
             </div>
           </div>
           
-          {weatherExpanded && (
-            <>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            weatherExpanded ? 'max-h-[500px] opacity-100 animate-accordion-down' : 'max-h-0 opacity-0'
+          }`}>
+            <div className="space-y-3 pt-1">
               {idea.weather.daytimeForecast && idea.weather.nighttimeForecast && (
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-background rounded-md p-2 border border-border">
@@ -301,8 +301,8 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
                   </p>
                 </div>
               )}
-            </>
-          )}
+            </div>
+          </div>
         </div>
       )}
 
