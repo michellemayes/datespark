@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, DollarSign, Calendar, Copy, Shirt, Trash2, Star as StarIcon, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, MapPin, Clock, DollarSign, Calendar, Copy, Shirt, Trash2, Star as StarIcon, Star, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { scheduleDate } from "@/lib/calendar";
 import GoogleMap from "./GoogleMap";
@@ -72,6 +72,7 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
   const [saved, setSaved] = useState(isSaved);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [currentHourIndex, setCurrentHourIndex] = useState(0);
+  const [weatherExpanded, setWeatherExpanded] = useState(false);
   const { toast } = useToast();
 
   // Reset saved state when idea changes
@@ -224,10 +225,21 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
 
       {idea.weather && (
         <div className="bg-muted/50 rounded-lg p-4 space-y-3 border border-border">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <span className="text-2xl">☀️</span>
-            Weather Forecast
-          </h4>
+          <button 
+            onClick={() => setWeatherExpanded(!weatherExpanded)}
+            className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
+          >
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <span className="text-2xl">☀️</span>
+              Weather Forecast
+            </h4>
+            {weatherExpanded ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+          
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-3xl font-bold text-primary">{idea.weather.temperature}°F</span>
@@ -237,55 +249,59 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
             </div>
           </div>
           
-          {idea.weather.daytimeForecast && idea.weather.nighttimeForecast && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-background rounded-md p-2 border border-border">
-                <div className="flex flex-col items-center space-y-1">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Daytime</p>
-                  {idea.weather.daytimeForecast.iconUrl && (
-                    <img 
-                      src={`${idea.weather.daytimeForecast.iconUrl}.png`} 
-                      alt={idea.weather.daytimeForecast.condition}
-                      className="w-10 h-10"
-                    />
-                  )}
-                  <p className="text-xl font-bold">{idea.weather.daytimeForecast.temperature}°F</p>
-                  <p className="text-xs text-center capitalize">{idea.weather.daytimeForecast.condition}</p>
-                  <div className="text-xs text-muted-foreground space-y-0.5 w-full">
-                    <p>💧 {idea.weather.daytimeForecast.precipitationProbability}%</p>
-                    <p>💨 {idea.weather.daytimeForecast.windSpeed} km/h</p>
+          {weatherExpanded && (
+            <>
+              {idea.weather.daytimeForecast && idea.weather.nighttimeForecast && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-background rounded-md p-2 border border-border">
+                    <div className="flex flex-col items-center space-y-1">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase">Daytime</p>
+                      {idea.weather.daytimeForecast.iconUrl && (
+                        <img 
+                          src={`${idea.weather.daytimeForecast.iconUrl}.png`} 
+                          alt={idea.weather.daytimeForecast.condition}
+                          className="w-10 h-10"
+                        />
+                      )}
+                      <p className="text-xl font-bold">{idea.weather.daytimeForecast.temperature}°F</p>
+                      <p className="text-xs text-center capitalize">{idea.weather.daytimeForecast.condition}</p>
+                      <div className="text-xs text-muted-foreground space-y-0.5 w-full">
+                        <p>💧 {idea.weather.daytimeForecast.precipitationProbability}%</p>
+                        <p>💨 {idea.weather.daytimeForecast.windSpeed} km/h</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-background rounded-md p-2 border border-border">
+                    <div className="flex flex-col items-center space-y-1">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase">Nighttime</p>
+                      {idea.weather.nighttimeForecast.iconUrl && (
+                        <img 
+                          src={`${idea.weather.nighttimeForecast.iconUrl}.png`} 
+                          alt={idea.weather.nighttimeForecast.condition}
+                          className="w-10 h-10"
+                        />
+                      )}
+                      <p className="text-xl font-bold">{idea.weather.nighttimeForecast.temperature}°F</p>
+                      <p className="text-xs text-center capitalize">{idea.weather.nighttimeForecast.condition}</p>
+                      <div className="text-xs text-muted-foreground space-y-0.5 w-full">
+                        <p>💧 {idea.weather.nighttimeForecast.precipitationProbability}%</p>
+                        <p>💨 {idea.weather.nighttimeForecast.windSpeed} km/h</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               
-              <div className="bg-background rounded-md p-2 border border-border">
-                <div className="flex flex-col items-center space-y-1">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Nighttime</p>
-                  {idea.weather.nighttimeForecast.iconUrl && (
-                    <img 
-                      src={`${idea.weather.nighttimeForecast.iconUrl}.png`} 
-                      alt={idea.weather.nighttimeForecast.condition}
-                      className="w-10 h-10"
-                    />
-                  )}
-                  <p className="text-xl font-bold">{idea.weather.nighttimeForecast.temperature}°F</p>
-                  <p className="text-xs text-center capitalize">{idea.weather.nighttimeForecast.condition}</p>
-                  <div className="text-xs text-muted-foreground space-y-0.5 w-full">
-                    <p>💧 {idea.weather.nighttimeForecast.precipitationProbability}%</p>
-                    <p>💨 {idea.weather.nighttimeForecast.windSpeed} km/h</p>
-                  </div>
+              {idea.clothingRecommendation && (
+                <div className="bg-background rounded-md p-3 border border-border">
+                  <p className="text-sm flex items-start gap-2">
+                    <Shirt className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
+                    <span><span className="font-semibold">What to wear:</span> {idea.clothingRecommendation}</span>
+                  </p>
                 </div>
-              </div>
-            </div>
-          )}
-          
-          {idea.clothingRecommendation && (
-            <div className="bg-background rounded-md p-3 border border-border">
-              <p className="text-sm flex items-start gap-2">
-                <Shirt className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
-                <span><span className="font-semibold">What to wear:</span> {idea.clothingRecommendation}</span>
-              </p>
-            </div>
+              )}
+            </>
           )}
         </div>
       )}
