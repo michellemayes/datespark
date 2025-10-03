@@ -238,40 +238,40 @@ export const DateIdeaCard = ({ idea, onSave, onDelete, onReviewUpdate, isSaved =
           </div>
           
           {idea.weather.daytimeForecast && idea.weather.nighttimeForecast && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-background rounded-md p-4 border border-border">
-                <div className="flex flex-col items-center space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-background rounded-md p-2 border border-border">
+                <div className="flex flex-col items-center space-y-1">
                   <p className="text-xs font-semibold text-muted-foreground uppercase">Daytime</p>
                   {idea.weather.daytimeForecast.iconUrl && (
                     <img 
                       src={`${idea.weather.daytimeForecast.iconUrl}.png`} 
                       alt={idea.weather.daytimeForecast.condition}
-                      className="w-12 h-12"
+                      className="w-10 h-10"
                     />
                   )}
-                  <p className="text-2xl font-bold">{idea.weather.daytimeForecast.temperature}°F</p>
+                  <p className="text-xl font-bold">{idea.weather.daytimeForecast.temperature}°F</p>
                   <p className="text-xs text-center capitalize">{idea.weather.daytimeForecast.condition}</p>
                   <div className="text-xs text-muted-foreground space-y-0.5 w-full">
-                    <p>💧 {idea.weather.daytimeForecast.precipitationProbability}% chance</p>
+                    <p>💧 {idea.weather.daytimeForecast.precipitationProbability}%</p>
                     <p>💨 {idea.weather.daytimeForecast.windSpeed} km/h</p>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-background rounded-md p-4 border border-border">
-                <div className="flex flex-col items-center space-y-2">
+              <div className="bg-background rounded-md p-2 border border-border">
+                <div className="flex flex-col items-center space-y-1">
                   <p className="text-xs font-semibold text-muted-foreground uppercase">Nighttime</p>
                   {idea.weather.nighttimeForecast.iconUrl && (
                     <img 
                       src={`${idea.weather.nighttimeForecast.iconUrl}.png`} 
                       alt={idea.weather.nighttimeForecast.condition}
-                      className="w-12 h-12"
+                      className="w-10 h-10"
                     />
                   )}
-                  <p className="text-2xl font-bold">{idea.weather.nighttimeForecast.temperature}°F</p>
+                  <p className="text-xl font-bold">{idea.weather.nighttimeForecast.temperature}°F</p>
                   <p className="text-xs text-center capitalize">{idea.weather.nighttimeForecast.condition}</p>
                   <div className="text-xs text-muted-foreground space-y-0.5 w-full">
-                    <p>💧 {idea.weather.nighttimeForecast.precipitationProbability}% chance</p>
+                    <p>💧 {idea.weather.nighttimeForecast.precipitationProbability}%</p>
                     <p>💨 {idea.weather.nighttimeForecast.windSpeed} km/h</p>
                   </div>
                 </div>
